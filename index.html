@@ -380,25 +380,112 @@
       <div class="container">
         <p class="eyebrow">Chama no zap</p>
         <h2 class="section__title" id="orcamento-titulo">Peça seu orçamento</h2>
-        <p class="section__lead">Preencha os dados e abrimos o WhatsApp com a mensagem pronta.</p>
-        <form class="form" id="form-orcamento" action="https://wa.me/5521974318206" method="get" novalidate>
-          <div class="form__field">
-            <label class="form__label" for="orc-pessoas">Número de pessoas</label>
-            <input class="form__input" type="number" id="orc-pessoas" name="pessoas" min="1" inputmode="numeric" placeholder="Ex.: 100" required>
-            <p class="form__error" id="orc-pessoas-erro" role="alert" hidden></p>
+        <p class="section__lead">Monte seu churrasco, veja a estimativa na hora e confira se a data está livre. Depois é só enviar tudo pelo WhatsApp.</p>
+        <form class="form form--calc" id="form-orcamento" action="https://wa.me/5521974318206" method="get" novalidate>
+          <div class="form__main">
+
+            <fieldset class="form__group">
+              <legend class="form__legend"><span class="form__step" aria-hidden="true">1</span>Seu evento</legend>
+
+              <div class="form__field">
+                <label class="form__label" for="orc-pessoas">Número de pessoas</label>
+                <div class="stepper">
+                  <button class="stepper__btn" type="button" data-step="-10" aria-label="Diminuir 10 pessoas">−</button>
+                  <input class="form__input stepper__input" type="number" id="orc-pessoas" name="pessoas" inputmode="numeric" aria-describedby="orc-pessoas-dica orc-pessoas-erro" required>
+                  <button class="stepper__btn" type="button" data-step="10" aria-label="Aumentar 10 pessoas">+</button>
+                </div>
+                <p class="form__help" id="orc-pessoas-dica" data-guests-hint></p>
+                <p class="form__error" id="orc-pessoas-erro" role="alert" hidden></p>
+              </div>
+
+              <div class="form__field">
+                <label class="form__label" for="orc-regiao">Região do evento</label>
+                <select class="form__input" id="orc-regiao" name="regiao" aria-describedby="orc-regiao-erro" required></select>
+                <p class="form__error" id="orc-regiao-erro" role="alert" hidden></p>
+              </div>
+
+              <div class="form__field">
+                <label class="form__label" for="orc-bairro">Bairro</label>
+                <input class="form__input" type="text" id="orc-bairro" name="bairro" autocomplete="off" placeholder="Ex.: Realengo" aria-describedby="orc-bairro-erro" required>
+                <p class="form__error" id="orc-bairro-erro" role="alert" hidden></p>
+              </div>
+            </fieldset>
+
+            <fieldset class="form__group">
+              <legend class="form__legend"><span class="form__step" aria-hidden="true">2</span>Serviço</legend>
+
+              <div class="form__field">
+                <span class="form__label" id="lbl-bebidas">Bebidas</span>
+                <div class="choices" role="radiogroup" aria-labelledby="lbl-bebidas">
+                  <label class="choice"><input type="radio" name="bebidas" value="sim" checked><span class="choice__box">Incluídas <small class="choice__fee" data-fee="drinks"></small></span></label>
+                  <label class="choice"><input type="radio" name="bebidas" value="nao"><span class="choice__box">Por conta do cliente</span></label>
+                </div>
+              </div>
+
+              <div class="form__field">
+                <span class="form__label" id="lbl-louca">Material</span>
+                <div class="choices" role="radiogroup" aria-labelledby="lbl-louca">
+                  <label class="choice"><input type="radio" name="louca" value="descartavel" checked><span class="choice__box">Descartável</span></label>
+                  <label class="choice"><input type="radio" name="louca" value="louca"><span class="choice__box">Louça <small class="choice__fee" data-fee="dishes"></small></span></label>
+                </div>
+              </div>
+
+              <div class="form__field">
+                <span class="form__label" id="lbl-extras">Opcionais</span>
+                <div class="checks" role="group" aria-labelledby="lbl-extras">
+                  <label class="check"><input type="checkbox" name="sobremesa" value="sim"><span class="check__box">Sobremesas <small class="choice__fee" data-fee="dessert"></small></span></label>
+                  <div class="check check--qty" data-extras></div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form__group">
+              <legend class="form__legend"><span class="form__step" aria-hidden="true">3</span>Data do evento</legend>
+
+              <div class="form__field">
+                <label class="form__label" for="orc-data">Data</label>
+                <input class="form__input" type="date" id="orc-data" name="data" aria-describedby="orc-data-dica orc-data-erro" required>
+                <p class="form__help" id="orc-data-dica" data-date-hint></p>
+                <p class="form__error" id="orc-data-erro" role="alert" hidden></p>
+              </div>
+
+              <div class="cal" id="cal" data-calendar>
+                <div class="cal__head">
+                  <button class="cal__nav" type="button" data-cal="prev" aria-label="Mês anterior">‹</button>
+                  <h3 class="cal__title" id="cal-titulo" aria-live="polite"></h3>
+                  <button class="cal__nav" type="button" data-cal="next" aria-label="Próximo mês">›</button>
+                </div>
+                <div class="cal__grid-wrap" data-cal-grid></div>
+                <ul class="cal__legend" aria-hidden="true">
+                  <li><i class="cal__dot cal__dot--free"></i>Livre</li>
+                  <li><i class="cal__dot cal__dot--busy"></i>Ocupada</li>
+                  <li><i class="cal__dot cal__dot--off"></i>Fora do prazo</li>
+                </ul>
+                <p class="cal__keys">Teclado: setas movem entre os dias, Enter escolhe, PageUp/PageDown troca o mês.</p>
+              </div>
+
+              <div class="avail" id="orc-data-status" role="status" aria-live="polite" hidden></div>
+              <p class="form__help">Consulta preliminar, feita sem sistema de reservas: a data só é reservada após a nossa confirmação pelo WhatsApp e o PIX de entrada.</p>
+            </fieldset>
           </div>
-          <div class="form__field">
-            <label class="form__label" for="orc-bairro">Bairro do evento</label>
-            <input class="form__input" type="text" id="orc-bairro" name="bairro" autocomplete="off" placeholder="Ex.: Realengo" required>
-            <p class="form__error" id="orc-bairro-erro" role="alert" hidden></p>
+
+          <div class="summary" role="group" aria-labelledby="sum-titulo">
+            <h3 class="summary__title" id="sum-titulo">Estimativa do orçamento</h3>
+            <div id="orc-resumo" class="summary__live" aria-live="polite" aria-atomic="true">
+              <p class="summary__label">Por pessoa</p>
+              <p class="summary__per" data-out="per">—</p>
+              <p class="summary__label">Total estimado</p>
+              <p class="summary__total" data-out="total">—</p>
+              <p class="summary__pix" data-out="pix"></p>
+            </div>
+            <ul class="summary__list" data-out="breakdown"></ul>
+            <p class="summary__warn"><strong>Valor estimado, sujeito a confirmação.</strong> O preço final depende de frete, cardápio e disponibilidade. Reserva da data com entrada de <span data-pix-percent>50</span>% via PIX, após confirmarmos a data.</p>
+            <details class="summary__msg">
+              <summary>Ver a mensagem que será enviada</summary>
+              <div class="form__preview" id="orc-preview"></div>
+            </details>
+            <button class="btn btn--primary form__submit" type="submit">Pedir orçamento no WhatsApp</button>
           </div>
-          <div class="form__field">
-            <label class="form__label" for="orc-data">Data do evento</label>
-            <input class="form__input" type="date" id="orc-data" name="data" required>
-            <p class="form__error" id="orc-data-erro" role="alert" hidden></p>
-          </div>
-          <button class="btn btn--primary form__submit" type="submit">Enviar pelo WhatsApp</button>
-          <p class="form__hint">Valor final confirmado no atendimento. Reserva da data com PIX de 50%.</p>
         </form>
       </div>
     </section>
@@ -478,6 +565,6 @@
     <a class="whatsapp-float" href="https://wa.me/5521974318206?text=Ol%C3%A1!%20Gostaria%20de%20um%20or%C3%A7amento%20de%20buffet." data-whatsapp aria-label="Falar no WhatsApp">
     <span class="visually-hidden">WhatsApp</span>
   </a>
-  </aside>
+  </div>
 </body>
 </html>

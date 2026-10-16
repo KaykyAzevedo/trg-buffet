@@ -11,7 +11,43 @@
     email: 'contato@trgbuffet.com.br',
     instagram: 'trgbuffet',                  // sem @
     address: ['Rua Marechal Fontenele, 1200', 'Realengo, Rio de Janeiro - RJ', 'CEP 21730-000'],
-    hours: 'Atendimento: seg. a sáb., das 8h às 19h'
+    hours: 'Atendimento: seg. a sáb., das 8h às 19h',
+
+    /* ---- Calculadora de orçamento + verificador de data (valores inventados) ---- */
+    quote: {
+      basePerPerson: 90,                     // R$ por pessoa (base de 100 convidados)
+      baseGuests: 100,
+      minGuests: 30,
+      maxGuests: 500,
+      defaultGuests: 100,
+      smallEvent: [                          // acréscimo por pessoa em eventos menores
+        { upTo: 49, add: 15 },
+        { upTo: 99, add: 5 }
+      ],
+      regions: [                             // frete/região: acréscimo por pessoa (mín–máx)
+        { id: 'realengo', label: 'Realengo e vizinhos (Bangu, Padre Miguel, Vila Militar, Sulacap…)', short: 'Realengo e vizinhos', addMin: 0, addMax: 0 },
+        { id: 'oeste', label: 'Zona Oeste próxima (Campo Grande, Santa Cruz, Jacarepaguá…)', short: 'Zona Oeste próxima', addMin: 15, addMax: 15 },
+        { id: 'rj', label: 'Demais regiões do Rio (Centro, Zonas Sul e Norte, Barra…)', short: 'Demais regiões do RJ', addMin: 30, addMax: 40 }
+      ],
+      drinksPerPerson: 12,                   // bebidas incluídas
+      dishesPerPerson: 8,                    // louça em vez de descartável
+      dessertPerPerson: 9,                   // sobremesas opcionais
+      extras: [                              // adicionais com quantidade
+        { id: 'garcom', label: 'Garçom', price: 180, unit: 'cada', max: 8 },
+        { id: 'churrasqueiro', label: 'Churrasqueiro', price: 250, unit: 'cada', max: 3 }
+      ],
+      variationPct: 5,                       // margem da faixa estimada (± %)
+      pixPercent: 50,                        // entrada via PIX
+      minLeadDays: 7,                        // antecedência mínima para consultar/reservar
+      maxMonthsAhead: 12,                    // até quantos meses à frente consultar
+      closedWeekdays: [],                    // dias da semana sem atendimento (0 = domingo)
+      busyDates: [                           // datas ocupadas (AAAA-MM-DD), inventadas
+        '2026-10-24', '2026-10-31', '2026-11-07', '2026-11-14', '2026-11-15', '2026-11-21',
+        '2026-11-28', '2026-12-05', '2026-12-12', '2026-12-19', '2026-12-20', '2026-12-26',
+        '2027-01-01', '2027-01-09', '2027-01-16', '2027-01-23', '2027-02-06', '2027-02-13',
+        '2027-02-20', '2027-03-06', '2027-03-20', '2027-04-03', '2027-04-17'
+      ]
+    }
   };
   var WHATSAPP_NUMBER = SITE.whatsapp;
 
@@ -261,63 +297,219 @@
     });
   }
 
-  /* ---------- Formulário de orçamento -> WhatsApp ---------- */
+  /* ---------- Orçamento: calculadora + verificador de data -> WhatsApp ---------- */
   var form = $('#form-orcamento');
   if (form) {
+    var Q = SITE.quote;
     var fPessoas = $('#orc-pessoas', form);
+    var fRegiao = $('#orc-regiao', form);
     var fBairro = $('#orc-bairro', form);
     var fData = $('#orc-data', form);
     var submit = $('.form__submit', form);
     var submitLabel = submit.textContent;
+    var statusBox = $('#orc-data-status', form);
+    var previewBox = $('#orc-preview', form);
+    var calRoot = $('[data-calendar]', form);
+    var calGrid = $('[data-cal-grid]', calRoot);
+    var calTitle = $('#cal-titulo', calRoot);
 
-    // data mínima = hoje
+    var MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    var WEEK = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    var WEEK_SHORT = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+    var brl = function (v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); };
+    var range = function (a, b) { return a === b ? brl(a) : brl(a) + ' a ' + brl(b); };
+
+    /* ---- datas ---- */
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function toISO(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+    function fromISO(s) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
+      if (!m) return null;
+      var d = new Date(+m[1], +m[2] - 1, +m[3]);
+      return d.getMonth() === +m[2] - 1 ? d : null;
+    }
+    function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+    function fmtBR(d) { return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
+    function fmtLong(d) { return WEEK[d.getDay()] + ', ' + d.getDate() + ' de ' + MONTHS[d.getMonth()] + ' de ' + d.getFullYear(); }
+
     var now = new Date();
-    var iso = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    fData.min = iso;
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var minDate = addDays(today, Q.minLeadDays);
+    var maxDate = new Date(today.getFullYear(), today.getMonth() + Q.maxMonthsAhead, today.getDate());
+    var busy = {};
+    Q.busyDates.forEach(function (s) { busy[s] = true; });
 
-    // pré-visualização ao vivo
-    var preview = document.createElement('div');
-    preview.className = 'form__preview';
-    form.insertBefore(preview, submit);
+    // 'free' | 'busy' | 'soon' | 'far'
+    function dateState(d) {
+      if (d < minDate) return 'soon';
+      if (d > maxDate) return 'far';
+      if (busy[toISO(d)] || Q.closedWeekdays.indexOf(d.getDay()) !== -1) return 'busy';
+      return 'free';
+    }
+    function nextFree(from, count) {
+      var out = [], d = addDays(from < minDate ? minDate : from, 0), guard = 0;
+      while (out.length < count && guard++ < 400) {
+        d = addDays(d, 1);
+        if (d > maxDate) break;
+        if (dateState(d) === 'free') out.push(d);
+      }
+      return out;
+    }
 
-    function fmtDate(v) {
-      var p = v.split('-');
-      return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : v;
+    /* ---- opções configuráveis geradas a partir de SITE.quote ---- */
+    fRegiao.appendChild(new Option('Selecione a região…', ''));
+    Q.regions.forEach(function (r) { fRegiao.appendChild(new Option(r.label, r.id)); });
+    fPessoas.min = Q.minGuests;
+    fPessoas.max = Q.maxGuests;
+    fPessoas.value = Q.defaultGuests;
+    $('[data-guests-hint]', form).textContent = 'Mínimo de ' + Q.minGuests + ' pessoas. O preço-base considera ' + Q.baseGuests + ' convidados.';
+    $('[data-date-hint]', form).textContent = 'Antecedência mínima de ' + Q.minLeadDays + ' dias (a partir de ' + fmtBR(minDate) + ').';
+    $('[data-fee="drinks"]', form).textContent = '+' + brl(Q.drinksPerPerson) + '/pessoa';
+    $('[data-fee="dishes"]', form).textContent = '+' + brl(Q.dishesPerPerson) + '/pessoa';
+    $('[data-fee="dessert"]', form).textContent = '+' + brl(Q.dessertPerPerson) + '/pessoa';
+    $all('[data-pix-percent]', form).forEach(function (e) { e.textContent = Q.pixPercent; });
+    fData.min = toISO(minDate);
+    fData.max = toISO(maxDate);
+
+    var extrasBox = $('[data-extras]', form);
+    Q.extras.forEach(function (x) {
+      var row = document.createElement('div');
+      row.className = 'extra';
+      row.innerHTML =
+        '<label class="check"><input type="checkbox" data-extra="' + x.id + '"><span class="check__box">' + x.label +
+        ' <small class="choice__fee">' + brl(x.price) + ' ' + x.unit + '</small></span></label>' +
+        '<label class="extra__qty" hidden><span class="visually-hidden">Quantidade: ' + x.label + '</span>' +
+        '<input class="form__input" type="number" min="1" max="' + x.max + '" value="1" inputmode="numeric" data-extra-qty="' + x.id + '"></label>';
+      extrasBox.appendChild(row);
+    });
+    extrasBox.className = 'extras';
+
+    /* ---- cálculo ---- */
+    function getState() {
+      var g = parseInt(fPessoas.value, 10);
+      var region = Q.regions.filter(function (r) { return r.id === fRegiao.value; })[0] || null;
+      var extras = Q.extras.map(function (x) {
+        var cb = $('[data-extra="' + x.id + '"]', form);
+        var qty = Math.max(1, Math.min(x.max, parseInt($('[data-extra-qty="' + x.id + '"]', form).value, 10) || 1));
+        return { def: x, on: cb.checked, qty: qty };
+      }).filter(function (e) { return e.on; });
+      return {
+        guests: g,
+        validGuests: g >= Q.minGuests && g <= Q.maxGuests,
+        region: region,
+        drinks: form.elements.bebidas.value === 'sim',
+        dishes: form.elements.louca.value === 'louca',
+        dessert: form.elements.sobremesa.checked,
+        extras: extras
+      };
+    }
+
+    function estimate(st) {
+      var g = st.validGuests ? st.guests : Math.max(Q.minGuests, st.guests || Q.minGuests);
+      var small = 0;
+      for (var i = 0; i < Q.smallEvent.length; i++) {
+        if (g <= Q.smallEvent[i].upTo) { small = Q.smallEvent[i].add; break; }
+      }
+      var rMin = st.region ? st.region.addMin : 0, rMax = st.region ? st.region.addMax : 0;
+      var opts = (st.drinks ? Q.drinksPerPerson : 0) + (st.dishes ? Q.dishesPerPerson : 0) + (st.dessert ? Q.dessertPerPerson : 0);
+      var v = Q.variationPct / 100;
+      var perMin = Math.floor((Q.basePerPerson + small + rMin + opts) * (1 - v));
+      var perMax = Math.ceil((Q.basePerPerson + small + rMax + opts) * (1 + v));
+      var extrasTotal = st.extras.reduce(function (s, e) { return s + e.def.price * e.qty; }, 0);
+      return {
+        guests: g, small: small, rMin: rMin, rMax: rMax, opts: opts, extrasTotal: extrasTotal,
+        perMin: perMin, perMax: perMax,
+        totMin: perMin * g + extrasTotal, totMax: perMax * g + extrasTotal
+      };
+    }
+
+    function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+
+    function describe(st, est) {
+      var lines = [];
+      lines.push(['Preço-base', brl(Q.basePerPerson) + '/pessoa']);
+      if (est.small) lines.push(['Evento pequeno', '+' + brl(est.small) + '/pessoa']);
+      if (st.region) lines.push(['Frete e região', est.rMax ? '+' + range(est.rMin, est.rMax).replace('R$ ', 'R$ ') + '/pessoa' : 'sem acréscimo']);
+      if (st.drinks) lines.push(['Bebidas', '+' + brl(Q.drinksPerPerson) + '/pessoa']);
+      if (st.dishes) lines.push(['Louça', '+' + brl(Q.dishesPerPerson) + '/pessoa']);
+      if (st.dessert) lines.push(['Sobremesas', '+' + brl(Q.dessertPerPerson) + '/pessoa']);
+      st.extras.forEach(function (e) {
+        lines.push([e.def.label + ' × ' + e.qty, brl(e.def.price * e.qty)]);
+      });
+      return lines;
+    }
+
+    function renderSummary() {
+      var st = getState();
+      var est = estimate(st);
+      var per = $('[data-out="per"]', form), tot = $('[data-out="total"]', form);
+      var pix = $('[data-out="pix"]', form), list = $('[data-out="breakdown"]', form);
+      if (!st.region || !st.validGuests) {
+        per.textContent = '—';
+        tot.textContent = '—';
+        pix.textContent = !st.validGuests ? 'Informe de ' + Q.minGuests + ' a ' + Q.maxGuests + ' pessoas.' : 'Escolha a região para ver a estimativa.';
+        list.innerHTML = '';
+      } else {
+        per.textContent = range(est.perMin, est.perMax);
+        tot.textContent = range(est.totMin, est.totMax);
+        pix.textContent = 'Entrada de ' + Q.pixPercent + '%: ' + range(est.totMin * Q.pixPercent / 100, est.totMax * Q.pixPercent / 100) + ' via PIX.';
+        list.innerHTML = '';
+        describe(st, est).forEach(function (l) {
+          var li = document.createElement('li');
+          var a = document.createElement('span'); a.textContent = l[0];
+          var b = document.createElement('span'); b.textContent = l[1];
+          li.appendChild(a); li.appendChild(b); list.appendChild(li);
+        });
+      }
+      return { st: st, est: est };
+    }
+
+    /* ---- mensagem ---- */
+    function availabilityNote() {
+      var d = fromISO(fData.value);
+      if (!d) return '';
+      var s = dateState(d);
+      if (s === 'free') return ' (livre no calendário do site; aguardo confirmação)';
+      if (s === 'busy') return ' (consta como ocupada no calendário do site; aceito sugestões)';
+      return '';
     }
 
     function buildMessage() {
-      var pessoas = fPessoas.value.trim();
-      var bairro = fBairro.value.trim();
-      var data = fData.value;
-      return [
+      var st = getState(), est = estimate(st);
+      var d = fromISO(fData.value);
+      var m = [
         'Olá! Gostaria de um orçamento de buffet de churrasco.',
         '',
-        '• Pessoas: ' + (pessoas || '___'),
-        '• Bairro: ' + (bairro || '___'),
-        '• Data: ' + (data ? fmtDate(data) : '___'),
-        '',
-        'Pode me passar valores e disponibilidade? Obrigado!'
-      ].join('\n');
+        '• Pessoas: ' + (st.guests || '___'),
+        '• Região: ' + (st.region ? st.region.short || st.region.label : '___'),
+        '• Bairro: ' + (fBairro.value.trim() || '___'),
+        '• Data: ' + (d ? fmtBR(d) + availabilityNote() : '___'),
+        '• Bebidas: ' + (st.drinks ? 'incluídas' : 'por minha conta'),
+        '• Material: ' + (st.dishes ? 'louça' : 'descartável'),
+        '• Sobremesas: ' + (st.dessert ? 'sim' : 'não'),
+        '• Adicionais: ' + (st.extras.length ? st.extras.map(function (e) { return e.qty + 'x ' + e.def.label.toLowerCase(); }).join(', ') : 'nenhum')
+      ];
+      if (st.region && st.validGuests) {
+        m.push('', 'Estimativa do site: ' + range(est.perMin, est.perMax) + ' por pessoa, total de ' + range(est.totMin, est.totMax) +
+          ' (valor estimado, sujeito a confirmação). Entendo que a reserva exige entrada de ' + Q.pixPercent + '% via PIX após a confirmação da data.');
+      }
+      m.push('', 'Pode me confirmar valores e disponibilidade? Obrigado!');
+      return m.join('\n');
     }
 
     function renderPreview() {
-      preview.innerHTML = '';
-      var title = document.createElement('strong');
-      title.textContent = 'Prévia da mensagem';
-      preview.appendChild(title);
-      preview.appendChild(document.createTextNode(buildMessage()));
+      previewBox.textContent = buildMessage();
     }
 
+    /* ---- erros ---- */
     function setError(input, msg) {
       var err = document.getElementById(input.id + '-erro');
       if (msg) {
         input.setAttribute('aria-invalid', 'true');
-        input.setAttribute('aria-describedby', err.id);
         err.textContent = msg;
         err.hidden = false;
       } else {
         input.removeAttribute('aria-invalid');
-        input.removeAttribute('aria-describedby');
         err.hidden = true;
         err.textContent = '';
       }
@@ -326,11 +518,17 @@
     function validate() {
       var first = null;
       var n = parseInt(fPessoas.value, 10);
+      var d = fromISO(fData.value);
+      var dErr = '';
+      if (!d) dErr = 'Faltou a data — sem ela não conseguimos checar a agenda.';
+      else if (d < minDate) dErr = 'Escolha uma data a partir de ' + fmtBR(minDate) + ' (antecedência mínima de ' + Q.minLeadDays + ' dias).';
+      else if (d > maxDate) dErr = 'Só consultamos datas até ' + fmtBR(maxDate) + '.';
+      else if (dateState(d) === 'busy') dErr = 'Essa data está indisponível. Escolha uma das sugestões abaixo do calendário.';
       var checks = [
-        [fPessoas, !(n >= 1) ? 'Informe quantas pessoas vão ao evento.' : ''],
-        [fBairro, fBairro.value.trim().length < 2 ? 'Faltou o bairro: ele define o frete.' : ''],
-        [fData, !fData.value ? 'Faltou a data — sem ela não conseguimos checar a agenda.'
-          : (fData.value < iso ? 'Essa data já passou. Escolha uma data futura.' : '')]
+        [fPessoas, !(n >= Q.minGuests && n <= Q.maxGuests) ? 'Informe entre ' + Q.minGuests + ' e ' + Q.maxGuests + ' pessoas.' : ''],
+        [fRegiao, !fRegiao.value ? 'Escolha a região do evento: ela define o frete.' : ''],
+        [fBairro, fBairro.value.trim().length < 2 ? 'Faltou o bairro do evento.' : ''],
+        [fData, dErr]
       ];
       checks.forEach(function (c) {
         setError(c[0], c[1]);
@@ -339,13 +537,198 @@
       return first;
     }
 
-    [fPessoas, fBairro, fData].forEach(function (inp) {
-      inp.addEventListener('input', function () {
-        if (inp.getAttribute('aria-invalid')) validate();
-        renderPreview();
+    /* ---- verificador de data + calendário ---- */
+    var view = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    var focusDate = minDate;
+
+    function showStatus(kind, d) {
+      statusBox.hidden = false;
+      statusBox.className = 'avail avail--' + kind;
+      statusBox.textContent = '';
+      var strong = document.createElement('strong');
+      var p = document.createElement('p');
+      if (kind === 'free') {
+        strong.textContent = 'Data disponível — confirme pelo WhatsApp';
+        p.textContent = fmtLong(d) + ' consta como livre. Consulta preliminar: a data só fica reservada depois da nossa confirmação e do PIX de ' + Q.pixPercent + '%.';
+        statusBox.appendChild(strong); statusBox.appendChild(p);
+      } else if (kind === 'busy') {
+        strong.textContent = 'Data indisponível';
+        p.textContent = fmtLong(d) + ' já está reservada. Que tal uma destas?';
+        statusBox.appendChild(strong); statusBox.appendChild(p);
+        var ul = document.createElement('ul');
+        ul.className = 'avail__list';
+        nextFree(d, 3).forEach(function (s) {
+          var li = document.createElement('li');
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'avail__pick';
+          b.textContent = WEEK_SHORT[s.getDay()] + ', ' + fmtBR(s);
+          b.addEventListener('click', function () { chooseDate(s, true); });
+          li.appendChild(b); ul.appendChild(li);
+        });
+        if (!ul.children.length) {
+          var none = document.createElement('p');
+          none.textContent = 'Não encontramos datas livres no período. Chame no WhatsApp.';
+          statusBox.appendChild(none);
+        } else statusBox.appendChild(ul);
+      } else if (kind === 'soon') {
+        strong.textContent = 'Data fora do prazo';
+        p.textContent = 'Precisamos de ' + Q.minLeadDays + ' dias de antecedência. A primeira data possível é ' + fmtBR(minDate) + '.';
+        statusBox.appendChild(strong); statusBox.appendChild(p);
+      } else {
+        strong.textContent = 'Data fora do período de consulta';
+        p.textContent = 'Consultamos datas até ' + fmtBR(maxDate) + '. Para depois disso, chame no WhatsApp.';
+        statusBox.appendChild(strong); statusBox.appendChild(p);
+      }
+    }
+
+    function chooseDate(d, moveFocus) {
+      var s = dateState(d);
+      if (s === 'soon' || s === 'far') {
+        showStatus(s, d);
+        return;
+      }
+      fData.value = toISO(d);
+      setError(fData, '');
+      focusDate = d;
+      view = new Date(d.getFullYear(), d.getMonth(), 1);
+      renderCalendar(moveFocus);
+      showStatus(s, d);
+      renderPreview();
+    }
+
+    function renderCalendar(takeFocus) {
+      calTitle.textContent = MONTHS[view.getMonth()] + ' de ' + view.getFullYear();
+      var selected = fData.value;
+      var first = new Date(view.getFullYear(), view.getMonth(), 1);
+      var startOffset = first.getDay();
+      var daysInMonth = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      var html = '<table class="cal__table" role="grid" aria-labelledby="cal-titulo"><thead><tr>';
+      WEEK.forEach(function (w, i) {
+        html += '<th scope="col" abbr="' + w + '">' + WEEK_SHORT[i] + '</th>';
+      });
+      html += '</tr></thead><tbody>';
+      var inView = focusDate.getFullYear() === view.getFullYear() && focusDate.getMonth() === view.getMonth();
+      var tabDay = inView ? focusDate.getDate() : 1;
+      var cell = 0;
+      for (var row = 0; row < 6; row++) {
+        if (cell - startOffset >= daysInMonth) break;
+        html += '<tr>';
+        for (var col = 0; col < 7; col++, cell++) {
+          var day = cell - startOffset + 1;
+          if (day < 1 || day > daysInMonth) { html += '<td></td>'; continue; }
+          var d = new Date(view.getFullYear(), view.getMonth(), day);
+          var s = dateState(d), iso = toISO(d);
+          var label = fmtLong(d) + ', ' + ({ free: 'livre', busy: 'ocupada', soon: 'fora do prazo', far: 'fora do período' })[s];
+          html += '<td role="gridcell"' + (iso === selected ? ' aria-selected="true"' : '') + '>' +
+            '<button type="button" class="cal__day cal__day--' + s + (iso === selected ? ' is-selected' : '') + (iso === toISO(today) ? ' is-today' : '') + '"' +
+            ' data-iso="' + iso + '" tabindex="' + (day === tabDay ? '0' : '-1') + '"' +
+            (s === 'soon' || s === 'far' ? ' aria-disabled="true"' : '') +
+            ' aria-label="' + label + '">' + day + '</button></td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      calGrid.innerHTML = html;
+      if (takeFocus) {
+        var b = $('[data-iso="' + toISO(focusDate) + '"]', calGrid);
+        if (b) b.focus();
+      }
+    }
+
+    function moveFocus(d) {
+      focusDate = d;
+      view = new Date(d.getFullYear(), d.getMonth(), 1);
+      renderCalendar(true);
+    }
+
+    calGrid.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-iso]');
+      if (!b) return;
+      chooseDate(fromISO(b.getAttribute('data-iso')), true);
+    });
+
+    calGrid.addEventListener('keydown', function (e) {
+      var b = e.target.closest('[data-iso]');
+      if (!b) return;
+      var d = fromISO(b.getAttribute('data-iso'));
+      var n = null;
+      switch (e.key) {
+        case 'ArrowLeft': n = addDays(d, -1); break;
+        case 'ArrowRight': n = addDays(d, 1); break;
+        case 'ArrowUp': n = addDays(d, -7); break;
+        case 'ArrowDown': n = addDays(d, 7); break;
+        case 'Home': n = addDays(d, -d.getDay()); break;
+        case 'End': n = addDays(d, 6 - d.getDay()); break;
+        case 'PageUp': n = new Date(d.getFullYear(), d.getMonth() - (e.shiftKey ? 12 : 1), d.getDate()); break;
+        case 'PageDown': n = new Date(d.getFullYear(), d.getMonth() + (e.shiftKey ? 12 : 1), d.getDate()); break;
+      }
+      if (n) { e.preventDefault(); moveFocus(n); }
+    });
+
+    $all('[data-cal]', calRoot).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var dir = btn.getAttribute('data-cal') === 'next' ? 1 : -1;
+        view = new Date(view.getFullYear(), view.getMonth() + dir, 1);
+        focusDate = new Date(view.getFullYear(), view.getMonth(), 1);
+        renderCalendar(false);
       });
     });
-    renderPreview();
+
+    fData.addEventListener('change', function () {
+      var d = fromISO(fData.value);
+      if (!d) { statusBox.hidden = true; renderCalendar(false); renderPreview(); return; }
+      var s = dateState(d);
+      if (s === 'soon' || s === 'far') {
+        setError(fData, s === 'soon'
+          ? 'Escolha uma data a partir de ' + fmtBR(minDate) + ' (antecedência mínima de ' + Q.minLeadDays + ' dias).'
+          : 'Só consultamos datas até ' + fmtBR(maxDate) + '.');
+        showStatus(s, d);
+        fData.value = '';
+        renderCalendar(false);
+        renderPreview();
+        return;
+      }
+      chooseDate(d, false);
+    });
+
+    /* ---- stepper, extras, eventos gerais ---- */
+    $all('[data-step]', form).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = parseInt(fPessoas.value, 10) || Q.defaultGuests;
+        v = Math.max(Q.minGuests, Math.min(Q.maxGuests, v + parseInt(b.getAttribute('data-step'), 10)));
+        fPessoas.value = v;
+        setError(fPessoas, '');
+        update();
+      });
+    });
+
+    $all('[data-extra]', form).forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var q = cb.closest('.extra').querySelector('.extra__qty');
+        q.hidden = !cb.checked;
+      });
+    });
+
+    function update() {
+      var n = parseInt(fPessoas.value, 10);
+      if (fPessoas.getAttribute('aria-invalid') && n >= Q.minGuests && n <= Q.maxGuests) setError(fPessoas, '');
+      renderSummary();
+      renderPreview();
+    }
+
+    form.addEventListener('input', function (e) {
+      if (e.target === fData) return;
+      if (e.target.getAttribute('aria-invalid') && e.target.value) setError(e.target, '');
+      update();
+    });
+    form.addEventListener('change', function (e) { if (e.target !== fData) update(); });
+    fPessoas.addEventListener('blur', function () {
+      var n = parseInt(fPessoas.value, 10);
+      if (fPessoas.value !== '' && (n < Q.minGuests || n > Q.maxGuests)) {
+        setError(fPessoas, 'Informe entre ' + Q.minGuests + ' e ' + Q.maxGuests + ' pessoas.');
+      }
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -360,6 +743,9 @@
         submit.textContent = submitLabel;
       }, 2500);
     });
+
+    renderCalendar(false);
+    update();
   }
 
   /* ---------- Lightbox da galeria ---------- */

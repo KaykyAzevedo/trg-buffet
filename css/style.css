@@ -2246,3 +2246,565 @@ h3 {
   max-height: 76vh;
   margin-inline: auto;
 }
+
+/* ==========================================================================
+   21. Calculadora de orçamento + verificador de data
+   ========================================================================== */
+.form--calc {
+  max-width: 1040px;
+  padding: var(--sp-5);
+  gap: var(--sp-6);
+}
+
+.form__main {
+  display: grid;
+  gap: var(--sp-5);
+  min-width: 0;
+}
+
+.form__group {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
+  margin: 0;
+  padding: var(--sp-5);
+  background: #fff;
+  border: 1px solid rgba(156, 130, 64, 0.35);
+  border-radius: var(--r-md);
+}
+
+.form__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.form__step {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 0.9375rem;
+  color: var(--creme-50);
+  background: var(--grad-fogo);
+  border-radius: 50%;
+}
+
+.form__help {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #4a5a5a;
+}
+
+select.form__input {
+  padding-right: 40px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e2a2a' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 14px center / 18px no-repeat;
+}
+
+/* Stepper */
+.stepper {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  gap: var(--sp-2);
+}
+
+.stepper__btn {
+  min-height: 52px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--texto-escuro);
+  background: var(--creme-100);
+  border: 1.5px solid #cfc6ad;
+  border-radius: var(--r-sm);
+  transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.stepper__btn:hover {
+  background: var(--ouro-400);
+  border-color: var(--ouro-700);
+}
+
+.stepper__btn:active {
+  transform: scale(0.96);
+}
+
+.stepper__input {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+/* Escolhas (radio / checkbox como chips) */
+.choices,
+.checks,
+.extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.choice,
+.check {
+  position: relative;
+  display: block;
+}
+
+.choice input,
+.check input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.choice__box,
+.check__box {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 48px;
+  padding: 0 16px;
+  font-weight: 500;
+  background: var(--creme-100);
+  border: 1.5px solid #cfc6ad;
+  border-radius: var(--r-pill);
+  transition: border-color var(--transition), background-color var(--transition), color var(--transition);
+}
+
+.check__box::before {
+  content: "";
+  flex: 0 0 18px;
+  height: 18px;
+  background: #fff;
+  border: 1.5px solid #8a8b80;
+  border-radius: 5px;
+}
+
+.choice__fee {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brasa-700);
+  white-space: nowrap;
+}
+
+.choice input:hover + .choice__box,
+.check input:hover + .check__box {
+  border-color: var(--ouro-700);
+}
+
+.choice input:checked + .choice__box {
+  background: var(--texto-escuro);
+  border-color: var(--texto-escuro);
+  color: var(--creme-50);
+}
+
+.choice input:checked + .choice__box .choice__fee {
+  color: var(--ouro-400);
+}
+
+.check input:checked + .check__box {
+  background: #fdecea;
+  border-color: var(--brasa-600);
+}
+
+.check input:checked + .check__box::before {
+  background: var(--brasa-600) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 14px no-repeat;
+  border-color: var(--brasa-600);
+}
+
+.choice input:focus-visible + .choice__box,
+.check input:focus-visible + .check__box {
+  outline: 3px solid var(--brasa-600);
+  outline-offset: 3px;
+}
+
+.extra {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.extra__qty[hidden] {
+  display: none;
+}
+
+.extra__qty .form__input {
+  width: 72px;
+  min-height: 48px;
+  text-align: center;
+}
+
+/* Calendário */
+.cal {
+  padding: var(--sp-4);
+  background: var(--creme-50);
+  border: 1px solid rgba(156, 130, 64, 0.35);
+  border-radius: var(--r-md);
+}
+
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.cal__title {
+  font-size: 1.125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.cal__nav {
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--texto-escuro);
+  background: #fff;
+  border: 1.5px solid #cfc6ad;
+  border-radius: 50%;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.cal__nav:hover {
+  background: var(--ouro-400);
+  border-color: var(--ouro-700);
+}
+
+.cal__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+
+.cal__table th {
+  padding: 4px 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4a5a5a;
+}
+
+.cal__table td {
+  padding: 0;
+}
+
+.cal__day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 40px;
+  padding: 0;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-sm);
+  transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.cal__day--free {
+  color: var(--texto-escuro);
+  background: #fff;
+  border-color: #d9cfb3;
+}
+
+.cal__day--free:hover {
+  border-color: var(--ouro-700);
+  background: #fff6dc;
+}
+
+.cal__day--busy {
+  color: #7a1f1c;
+  background: #f6d8d5;
+  border-color: #e3a9a4;
+  text-decoration: line-through;
+}
+
+.cal__day--busy:hover {
+  border-color: var(--brasa-600);
+}
+
+.cal__day--soon,
+.cal__day--far {
+  color: #6b6f66;
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.cal__day.is-today::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 14px;
+  height: 3px;
+  background: var(--ouro-700);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.cal__day.is-selected {
+  color: var(--creme-50);
+  background: var(--texto-escuro);
+  border-color: var(--texto-escuro);
+  text-decoration: none;
+}
+
+.cal__day.cal__day--busy.is-selected {
+  background: var(--brasa-700);
+  border-color: var(--brasa-700);
+}
+
+.cal__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+  font-size: 0.8125rem;
+  color: #3b4a4a;
+}
+
+.cal__legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal__dot {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid;
+  border-radius: 4px;
+}
+
+.cal__dot--free { background: #fff; border-color: #8a7a46; }
+.cal__dot--busy { background: #f6d8d5; border-color: #b4403b; }
+.cal__dot--off { background: transparent; border-color: #8a8b80; border-style: dashed; }
+
+.cal__keys {
+  margin-top: var(--sp-2);
+  font-size: 0.75rem;
+  color: #4a5a5a;
+}
+
+/* Resultado da consulta de data */
+.avail {
+  padding: var(--sp-4);
+  font-size: 0.9375rem;
+  border-left: 4px solid;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+.avail[hidden] {
+  display: none;
+}
+
+.avail strong {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.avail--free {
+  background: #e6f3e6;
+  border-color: #2f7d32;
+  color: #1c4a1e;
+}
+
+.avail--busy,
+.avail--soon,
+.avail--far {
+  background: #fdecea;
+  border-color: var(--brasa-600);
+  color: #5c1613;
+}
+
+.avail__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.avail__pick {
+  min-height: 44px;
+  padding: 0 16px;
+  font-weight: 600;
+  color: var(--texto-escuro);
+  background: #fff;
+  border: 1.5px solid var(--brasa-600);
+  border-radius: var(--r-pill);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.avail__pick:hover {
+  background: var(--brasa-600);
+  color: #fff;
+}
+
+/* Resumo / estimativa */
+.summary {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  color: var(--creme-50);
+  background: var(--carvao-800);
+  background-image: radial-gradient(120% 80% at 50% 0%, #3b1b1b 0%, #1e2a2a 70%);
+  border: 1px solid var(--ouro-700);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-ouro);
+  min-width: 0;
+}
+
+.summary__title {
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ouro-400);
+}
+
+.summary__label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.summary__per {
+  margin-bottom: var(--sp-3);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.375rem;
+  color: var(--creme-50);
+}
+
+.summary__total {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.625rem, 6vw, 2.125rem);
+  line-height: 1.1;
+  color: var(--ouro-400);
+  overflow-wrap: anywhere;
+}
+
+.summary__pix {
+  margin-top: var(--sp-2);
+  font-size: 0.875rem;
+  color: var(--texto-claro);
+}
+
+.summary__list {
+  display: grid;
+  gap: 6px;
+  padding-top: var(--sp-3);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--carvao-600);
+}
+
+.summary__list:empty {
+  display: none;
+}
+
+.summary__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  color: var(--texto-suave);
+}
+
+.summary__list li span:last-child {
+  text-align: right;
+  color: var(--texto-claro);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary__warn {
+  padding: var(--sp-3);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--texto-claro);
+  background: rgba(210, 46, 41, 0.14);
+  border-left: 3px solid var(--brasa-500);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+.summary__msg summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--ouro-400);
+  cursor: pointer;
+}
+
+.summary .form__preview {
+  margin-top: var(--sp-2);
+  color: #2f3d3d;
+}
+
+.summary :focus-visible {
+  outline-color: var(--ouro-400);
+}
+
+@media (min-width: 640px) {
+  .form--calc {
+    padding: var(--sp-6);
+  }
+}
+
+@media (min-width: 960px) {
+  .form--calc {
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+    align-items: start;
+  }
+
+  .summary {
+    position: sticky;
+    top: calc(var(--header-height) + var(--sp-4));
+  }
+}
+
+.choice,
+.check,
+.extra {
+  max-width: 100%;
+}
+
+.choice__box,
+.check__box {
+  flex-wrap: wrap;
+  padding-block: 6px;
+  row-gap: 0;
+}
+
+@media (max-width: 400px) {
+  .check__box,
+  .choice__box {
+    padding-inline: 12px;
+  }
+}
