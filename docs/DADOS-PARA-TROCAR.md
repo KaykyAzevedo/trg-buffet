@@ -81,3 +81,7 @@ Em **`js/main.js` → `SITE.menu`**:
 | Carnes extras (porção a mais) | `extraMeats` (`perPerson`) | picanha +R$ 14, cupim +R$ 10, copa lombo +R$ 6, polpetone +R$ 5, queijo coalho +R$ 4 (por pessoa, inventados) |
 
 A seleção entra na estimativa (carnes extras somam por pessoa) e na mensagem do WhatsApp.
+
+## Pacotes
+
+Em **`js/main.js` → `SITE.packages`** (3 pacotes inventados: Essencial, Completo recomendado, Premium). Cada item define: `sides` (ids das guarnições), `soup`, `drinks`, `dishes`, `dessert`, `meats` (ids de `SITE.menu.extraMeats`) e `extras` (`{ garcom: 2, churrasqueiro: 1 }`). O preço "a partir de" é calculado com `SITE.quote` (base + opções, Realengo, 100 convidados). Para destacar outro pacote, mova `recommended: true`. O botão pré-seleciona a calculadora e leva o cliente ao formulário.

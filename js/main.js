@@ -73,11 +73,31 @@
         { id: 'polpetone', label: 'Polpetone recheado com provolone', perPerson: 5 },
         { id: 'coalho', label: 'Queijo coalho', perPerson: 4 }
       ]
-    }
+    },
+
+    /* ---- Pacotes (inventados, partem do buffet completo de R$ 90/pessoa) ---- */
+    packages: [
+      {
+        id: 'essencial', name: 'Essencial', tagline: 'O buffet completo, sem enfeite',
+        sides: ['arroz', 'farofa', 'molho'], soup: '', drinks: false, dishes: false, dessert: false, meats: [], extras: {}
+      },
+      {
+        id: 'completo', name: 'Completo', tagline: 'O que a maioria das festas pede', recommended: true,
+        sides: ['arroz', 'farofa', 'molho', 'salpicao', 'batata'], soup: '', drinks: true, dishes: false, dessert: false, meats: ['picanha'], extras: {}
+      },
+      {
+        id: 'premium', name: 'Premium', tagline: 'Para você só curtir a festa',
+        sides: ['arroz', 'farofa', 'molho', 'salpicao', 'caprese'], soup: '', drinks: true, dishes: true, dessert: true,
+        meats: ['picanha', 'cupim'], extras: { garcom: 2, churrasqueiro: 1 }
+      }
+    ]
   };
   var WHATSAPP_NUMBER = SITE.whatsapp;
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // gancho de eventos (analytics): no-op até haver provider configurado
+  function track() {}
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $all(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
@@ -817,6 +837,115 @@
         submit.disabled = false;
         submit.textContent = submitLabel;
       }, 2500);
+    });
+
+
+    /* ---- pacotes: cards + pré-seleção da calculadora ---- */
+    var packsBox = $('[data-packs]');
+    var packStatus = document.createElement('p');
+    packStatus.className = 'form__help form__pack-status';
+    packStatus.setAttribute('role', 'status');
+    $('.form__main', form).insertBefore(packStatus, $('.form__main', form).firstChild);
+    var presetApplying = false;
+
+    function packState(p) {
+      return {
+        guests: Q.baseGuests, validGuests: true, region: Q.regions[0],
+        drinks: p.drinks, dishes: p.dishes, dessert: p.dessert,
+        meats: p.meats.map(function (id) { return lookup(M.extraMeats, id); }).filter(Boolean),
+        extras: Object.keys(p.extras).map(function (id) { return { def: lookup(Q.extras, id), qty: p.extras[id] }; }).filter(function (e) { return e.def; })
+      };
+    }
+
+    function packItems(p) {
+      var it = [p.sides.length + ' guarnições à escolha (de ' + M.sides.length + ')', 'Carnes do buffet completo, petiscos e um caldo'];
+      it.push(p.drinks ? 'Bebidas incluídas' : 'Bebidas por conta do cliente');
+      it.push(p.dishes ? 'Louça (sem descartável)' : 'Material descartável');
+      if (p.dessert) it.push('Sobremesas');
+      packState(p).meats.forEach(function (m) { it.push('Porção extra de ' + m.label.toLowerCase()); });
+      packState(p).extras.forEach(function (e) { it.push(e.qty + ' ' + (e.qty > 1 ? (e.def.label === 'Garçom' ? 'garçons' : e.def.label.toLowerCase() + 's') : e.def.label.toLowerCase())); });
+      return it;
+    }
+
+    function packPrice(p) {
+      var st = packState(p);
+      var small = 0;
+      var opts = (p.drinks ? Q.drinksPerPerson : 0) + (p.dishes ? Q.dishesPerPerson : 0) + (p.dessert ? Q.dessertPerPerson : 0) +
+        st.meats.reduce(function (s, m) { return s + m.perPerson; }, 0);
+      var extras = st.extras.reduce(function (s, e) { return s + e.def.price * e.qty; }, 0);
+      return { per: Q.basePerPerson + small + opts, extras: extras };
+    }
+
+    function applyPreset(p) {
+      presetApplying = true;
+      $all('[name="guarnicao"]', form).forEach(function (b) { b.checked = false; b.disabled = false; });
+      p.sides.forEach(function (id) {
+        var b = $('[name="guarnicao"][value="' + id + '"]', form);
+        if (b) b.checked = true;
+      });
+      syncSides();
+      var soup = $('[name="caldo"][value="' + (p.soup || '') + '"]', form);
+      if (soup) soup.checked = true;
+      $('[name="bebidas"][value="' + (p.drinks ? 'sim' : 'nao') + '"]', form).checked = true;
+      $('[name="louca"][value="' + (p.dishes ? 'louca' : 'descartavel') + '"]', form).checked = true;
+      form.elements.sobremesa.checked = p.dessert;
+      $all('[name="carne"]', form).forEach(function (b) { b.checked = p.meats.indexOf(b.value) !== -1; });
+      Q.extras.forEach(function (x) {
+        var cb = $('[data-extra="' + x.id + '"]', form);
+        var qty = $('[data-extra-qty="' + x.id + '"]', form);
+        var n = p.extras[x.id] || 0;
+        cb.checked = n > 0;
+        qty.value = n || 1;
+        cb.closest('.extra').querySelector('.extra__qty').hidden = !cb.checked;
+      });
+      update();
+      presetApplying = false;
+      $all('[data-pack]').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.getAttribute('data-pack') === p.id));
+      });
+      packStatus.textContent = 'Pacote ' + p.name + ' aplicado. Ajuste o que quiser abaixo e escolha a região e a data.';
+      var target = document.getElementById('orcamento');
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      setTimeout(function () { fPessoas.focus({ preventScroll: true }); }, reduceMotion ? 0 : 450);
+      track('package_select', { package: p.id });
+    }
+
+    if (packsBox) {
+      SITE.packages.forEach(function (p) {
+        var price = packPrice(p);
+        var li = document.createElement('li');
+        li.className = 'pack' + (p.recommended ? ' pack--rec' : '');
+        li.innerHTML =
+          (p.recommended ? '<span class="pack__badge">Recomendado</span>' : '') +
+          '<h3 class="pack__name"></h3><p class="pack__tag"></p>' +
+          '<p class="pack__price"><small>a partir de</small><strong></strong><small>por pessoa</small></p>' +
+          '<ul class="pack__items"></ul>' +
+          '<button class="btn ' + (p.recommended ? 'btn--primary' : 'btn--ghost') + ' pack__btn" type="button" data-pack="' + p.id + '" aria-pressed="false"></button>';
+        li.querySelector('.pack__name').textContent = p.name;
+        li.querySelector('.pack__tag').textContent = p.tagline;
+        li.querySelector('.pack__price strong').textContent = brl(price.per);
+        li.querySelector('.pack__btn').textContent = 'Escolher o ' + p.name;
+        li.querySelector('.pack__btn').setAttribute('aria-label', 'Escolher o pacote ' + p.name + ' e pré-selecionar a calculadora');
+        packItems(p).forEach(function (t) {
+          var i = document.createElement('li');
+          i.textContent = t;
+          li.querySelector('.pack__items').appendChild(i);
+        });
+        if (price.extras) {
+          var ex = document.createElement('li');
+          ex.className = 'pack__extra';
+          ex.textContent = '+ ' + brl(price.extras) + ' em serviços (valor fixo)';
+          li.querySelector('.pack__items').appendChild(ex);
+        }
+        li.querySelector('.pack__btn').addEventListener('click', function () { applyPreset(p); });
+        packsBox.appendChild(li);
+      });
+      $('[data-packs-note]').textContent = 'Preços por pessoa para ' + Q.baseGuests + ' convidados em ' + Q.regions[0].short +
+        '. Estimativa sujeita a confirmação; frete e região podem alterar o valor.';
+    }
+
+    form.addEventListener('input', function () {
+      if (!presetApplying) $all('[data-pack]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
     });
 
     renderCalendar(false);
