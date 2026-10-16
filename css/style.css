@@ -3630,3 +3630,86 @@ html[data-theme="light"] .packs {
 .menu__print {
   margin-top: var(--sp-5);
 }
+
+/* Avaliações: resumo, selo e fonte */
+.reviews__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4) var(--sp-6);
+  margin-top: var(--sp-6);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--carvao-700);
+  border: 1px solid var(--carvao-600);
+  border-radius: var(--r-md);
+}
+
+.reviews__score {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.reviews__score strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: var(--ouro-400);
+}
+
+.reviews__stars {
+  font-size: 1.25rem;
+  letter-spacing: 0.1em;
+  color: var(--ouro-500);
+}
+
+.reviews__count {
+  font-size: var(--fs-small);
+  color: var(--texto-suave);
+}
+
+.reviews__seal {
+  display: inline-block;
+  padding: 4px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ouro-400);
+  border: 1px solid var(--ouro-500);
+  border-radius: var(--r-pill);
+}
+
+.reviews__seal--example {
+  color: var(--texto-claro);
+  border-style: dashed;
+}
+
+.reviews__google {
+  margin-left: auto;
+}
+
+.testimonial__src {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--texto-suave);
+}
+
+.testimonial__example {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 1px 8px;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+  border: 1px dashed var(--texto-suave);
+  border-radius: var(--r-pill);
+}
+
+.testimonial__author > span:last-child {
+  align-items: flex-start;
+}

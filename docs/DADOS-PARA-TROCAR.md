@@ -193,3 +193,12 @@ Atenção: tudo o que está na planilha publicada é **público** (qualquer pess
 - **Compartilhar** usa a Web Share API (celulares); sem suporte, copia o link (com aviso na tela).
 - Links: botão na seção Cardápio, rodapé e 4º atalho ("PDF") da barra inferior mobile.
 - A página está com `noindex` (modo demo, igual ao `index.html`): remova a tag `robots` das duas quando publicar de verdade e ajuste o `canonical` para o domínio real.
+
+## Avaliações (prova social)
+
+A seção `#depoimentos` é montada a partir de `reviews` em `data/site-data.json` (ou do painel `/admin/`, aba Avaliações): nome, evento/bairro, data, fonte (`Google`, `WhatsApp`…), estrelas (1 a 5), texto e **`real`**. O resumo mostra a nota média, o número de avaliações e um selo.
+
+- **`real: true` só para avaliações verdadeiras**, com autorização do cliente. Hoje os 4 depoimentos são **fictícios** (`real: false`): aparecem com a marca "Exemplo", o selo diz "Depoimentos de exemplo (demonstração)" e a média é só dos exemplos.
+- **Dados estruturados (JSON-LD):** `AggregateRating` e `Review` são gerados **somente** com as avaliações `real: true`. Com nenhuma real, nada é emitido (e qualquer `aggregateRating` que estivesse no JSON-LD é removido). Isso evita violar as diretrizes de dados estruturados do Google. Atenção: o Google também restringe "avaliações próprias" (self-serving) de empresas locais em resultados de busca; mesmo com avaliações reais, o destaque com estrelas pode não aparecer.
+- **Link "Ver no Google":** `reviews.googleUrl` (aceita só `https://`). Vazio = o botão não aparece.
+- Para trocar os exemplos: apague/edite os itens, marque "Avaliação real" e publique.

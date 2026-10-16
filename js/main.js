@@ -357,6 +357,137 @@
     });
   })();
 
+  /* ---------- Avaliações a partir dos dados (SITE.reviews) ---------- */
+  (function () {
+    var list = $('.testimonials__list');
+    var R = SITE.reviews || {};
+    var items = (R.itens || []).filter(function (r) { return r && r.nome && r.texto; });
+    if (!list || !items.length) return;
+
+    var MONTHS_ABBR = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    function monthYear(s) {
+      var m = /^(\d{4})-(\d{2})-\d{2}$/.exec(s || '');
+      return m ? MONTHS_ABBR[+m[2] - 1] + '/' + m[1] : '';
+    }
+    function stars(n) { n = Math.max(0, Math.min(5, Math.round(n))); return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
+    function initials(name) {
+      var p = String(name).trim().split(/\s+/);
+      return ((p[0] || '').charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : '')).toUpperCase();
+    }
+
+    var real = items.filter(function (r) { return r.real === true; });
+    var basis = real.length ? real : items;                 // sem avaliação real: a média é só dos exemplos
+    var avg = basis.reduce(function (s, r) { return s + (Number(r.estrelas) || 0); }, 0) / basis.length;
+    var avgText = avg.toFixed(1).replace('.', ',');
+    var exampleMode = real.length === 0;
+
+    list.innerHTML = '';
+    items.forEach(function (r) {
+      var li = document.createElement('li');
+      li.className = 'testimonials__item';
+      var fig = document.createElement('figure');
+      fig.className = 'testimonial';
+      var st = document.createElement('span');
+      st.className = 'testimonial__stars';
+      st.setAttribute('role', 'img');
+      st.setAttribute('aria-label', r.estrelas + ' de 5 estrelas');
+      st.textContent = stars(r.estrelas);
+      var bq = document.createElement('blockquote');
+      bq.className = 'testimonial__quote';
+      var p = document.createElement('p');
+      p.textContent = r.texto;
+      bq.appendChild(p);
+      var cap = document.createElement('figcaption');
+      cap.className = 'testimonial__author';
+      var av = document.createElement('span');
+      av.className = 'testimonial__avatar';
+      av.setAttribute('aria-hidden', 'true');
+      av.textContent = initials(r.nome);
+      var who = document.createElement('span');
+      who.appendChild(document.createTextNode(r.nome));
+      var meta = document.createElement('span');
+      meta.className = 'testimonial__meta';
+      meta.textContent = r.local || '';
+      who.appendChild(meta);
+      var src = document.createElement('span');
+      src.className = 'testimonial__src';
+      var when = monthYear(r.data);
+      src.textContent = [r.fonte, when].filter(Boolean).join(' · ');
+      who.appendChild(src);
+      if (r.real !== true) {
+        var ex = document.createElement('span');
+        ex.className = 'testimonial__example';
+        ex.textContent = 'Exemplo';
+        who.appendChild(ex);
+      }
+      cap.appendChild(av);
+      cap.appendChild(who);
+      fig.appendChild(st);
+      fig.appendChild(bq);
+      fig.appendChild(cap);
+      li.appendChild(fig);
+      list.appendChild(li);
+    });
+
+    // resumo: nota média, quantidade, selo e link do Google
+    var old = $('.reviews__summary');
+    if (old) old.parentNode.removeChild(old);
+    var sum = document.createElement('div');
+    sum.className = 'reviews__summary';
+    var score = document.createElement('p');
+    score.className = 'reviews__score';
+    var strong = document.createElement('strong');
+    strong.textContent = avgText;
+    var sc = document.createElement('span');
+    sc.className = 'reviews__stars';
+    sc.setAttribute('role', 'img');
+    sc.setAttribute('aria-label', 'Nota média ' + avgText + ' de 5');
+    sc.textContent = stars(avg);
+    score.appendChild(strong);
+    score.appendChild(sc);
+    var count = document.createElement('p');
+    count.className = 'reviews__count';
+    count.textContent = (exampleMode ? 'Média dos depoimentos de exemplo' : 'Nota média') + ' · ' + basis.length + (basis.length === 1 ? ' avaliação' : ' avaliações');
+    var seal = document.createElement('span');
+    seal.className = 'reviews__seal' + (exampleMode ? ' reviews__seal--example' : '');
+    seal.textContent = exampleMode ? 'Depoimentos de exemplo (demonstração)' : 'Avaliações reais de clientes';
+    var left = document.createElement('div');
+    left.appendChild(score);
+    left.appendChild(count);
+    sum.appendChild(left);
+    sum.appendChild(seal);
+    if (R.googleUrl && /^https:\/\//i.test(R.googleUrl)) {
+      var g = document.createElement('a');
+      g.className = 'btn btn--ghost reviews__google';
+      g.href = R.googleUrl;
+      g.target = '_blank';
+      g.rel = 'noopener noreferrer';
+      g.textContent = 'Ver no Google';
+      sum.appendChild(g);
+    }
+    list.parentNode.insertBefore(sum, list);
+
+    // Dados estruturados (JSON-LD): SÓ com avaliações reais (real: true). Exemplos nunca entram.
+    var ld = $('script[type="application/ld+json"]');
+    if (ld) {
+      try {
+        var obj = JSON.parse(ld.textContent);
+        delete obj.aggregateRating;
+        delete obj.review;
+        if (real.length) {
+          var ravg = real.reduce(function (s, r) { return s + (Number(r.estrelas) || 0); }, 0) / real.length;
+          obj.aggregateRating = { '@type': 'AggregateRating', ratingValue: Math.round(ravg * 10) / 10, reviewCount: real.length, bestRating: 5, worstRating: 1 };
+          obj.review = real.map(function (r) {
+            var rv = { '@type': 'Review', author: { '@type': 'Person', name: r.nome }, reviewRating: { '@type': 'Rating', ratingValue: r.estrelas, bestRating: 5, worstRating: 1 }, reviewBody: r.texto };
+            if (/^\d{4}-\d{2}-\d{2}$/.test(r.data || '')) rv.datePublished = r.data;
+            return rv;
+          });
+        }
+        ld.textContent = JSON.stringify(obj, null, 2);
+      } catch (e) { /* JSON-LD intacto se não der para ler */ }
+    }
+  })();
+
   /* ---------- Abas do cardápio (WAI-ARIA tabs) ---------- */
   $all('[data-tabs]').forEach(function (root) {
     var list = $('[role="tablist"]', root);
