@@ -410,8 +410,10 @@ h3 {
 }
 
 .header__logo {
-  width: 44px;
-  height: 44px;
+  width: 84px;
+  height: 84px;
+  margin-block: 0 -16px;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
   object-fit: contain;
   transition: transform 400ms var(--ease);
 }
@@ -536,8 +538,9 @@ h3 {
 
 @media (min-width: 1024px) {
   .header__logo {
-    width: 48px;
-    height: 48px;
+    width: 116px;
+    height: 116px;
+    margin-block: 0 -40px;
   }
 
   .header__toggle {
@@ -611,7 +614,7 @@ h3 {
   align-items: center;
   min-height: 100vh;
   min-height: 100svh;
-  padding-block: calc(var(--header-height) + 24px) var(--sp-8);
+  padding-block: calc(var(--header-height) + 48px) var(--sp-8);
   /* camadas: overlay carvão/vinho p/ contraste, foto (WebP) e SVG como fallback */
   background-color: var(--carvao-900);
   background-image:
