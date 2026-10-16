@@ -89,3 +89,9 @@ Em **`js/main.js` → `SITE.packages`** (3 pacotes inventados: Essencial, Comple
 ## Barra fixa inferior (mobile)
 
 `<nav class="dock">` no fim do `index.html` (3 atalhos: Orçamento, WhatsApp, Cardápio). Aparece só abaixo de 768px; o botão flutuante do WhatsApp sobe para ficar acima dela. O link do WhatsApp usa `data-whatsapp`, então o número vem de `SITE.whatsapp`. Para mudar a altura, ajuste `--dock-h` no CSS.
+
+## PWA (instalável + offline)
+
+- `manifest.webmanifest`: nome, cores (`theme_color` / `background_color` = `#1E2A2A`), ícones em `assets/icons/` (192, 512 e maskable 512, gerados a partir de `assets/logo.png`). Troque `name`/`short_name` se o nome do negócio mudar.
+- `sw.js`: service worker simples. Páginas: rede primeiro, depois cache; estáticos: cache com atualização em segundo plano; sem rede, cai em `index.html` (ou `offline.html`). **Ao publicar mudanças em CSS/JS/imagens, aumente `VERSION` em `sw.js`** (ex.: `trg-buffet-v2`) para limpar o cache antigo. A lista `CORE` é o que é pré-carregado.
+- Só registra em `http://` e `https://` (não em `file://`). Em subpasta (GitHub Pages `/trg-buffet/`) os caminhos relativos já funcionam.

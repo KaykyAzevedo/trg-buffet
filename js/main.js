@@ -102,6 +102,13 @@
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $all(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
 
+  /* ---------- PWA: service worker (só em http/https) ---------- */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* sem SW: o site segue normal */ });
+    });
+  }
+
   /* ---------- Ano no rodapé ---------- */
   $all('[data-year]').forEach(function (el) {
     el.textContent = new Date().getFullYear();
