@@ -1,6 +1,6 @@
 /* TRG Buffet - service worker simples: cache estático + fallback offline.
    Para forçar atualização dos arquivos em cache, mude VERSION. */
-const VERSION = 'trg-buffet-v4';
+const VERSION = 'trg-buffet-v5';
 const CORE = [
   './',
   'index.html',

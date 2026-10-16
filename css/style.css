@@ -3355,3 +3355,187 @@ body.is-locked .dock {
     align-items: start;
   }
 }
+
+/* ==========================================================================
+   22. Toggle de tema + tema claro (creme)
+   O tema escuro é o padrão (seções escuras alternadas com seções creme).
+   No tema claro as seções escuras viram creme; hero, barra inferior, resumo da
+   calculadora e lightbox continuam escuros (foto/estética), com tokens restaurados.
+   ========================================================================== */
+.header__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  position: relative;
+  z-index: 2;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  color: var(--texto-claro);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.theme-toggle:hover {
+  color: var(--ouro-400);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-toggle svg {
+  grid-area: 1 / 1;
+  width: 22px;
+  height: 22px;
+  transition: opacity 250ms var(--ease), transform 400ms var(--ease);
+}
+
+/* no escuro mostra o sol (ação: ir pro claro); no claro mostra a lua */
+.theme-toggle__moon { opacity: 0; transform: rotate(-60deg) scale(0.6); }
+html[data-theme="light"] .theme-toggle__sun { opacity: 0; transform: rotate(60deg) scale(0.6); }
+html[data-theme="light"] .theme-toggle__moon { opacity: 1; transform: none; }
+
+@media (min-width: 1024px) {
+  .nav { order: 2; }
+  .header__tools { order: 3; margin-left: var(--sp-3); }
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --texto-claro: #1e2a2a;
+  --texto-suave: #46564f;
+  --carvao-900: #ede2c4;
+  --carvao-800: #f7f0dc;
+  --carvao-700: #ffffff;
+  --carvao-600: #d6c9a6;
+  --ouro-400: #7a5d14;
+  --ouro-500: #7a5d14;
+  --ouro-700: #7a5d14;
+}
+
+/* superfícies que permanecem escuras: restauram os tokens originais */
+html[data-theme="light"] :is(.hero, .dock, .summary, .lightbox, .header, .whatsapp-float, .areamap__svg) {
+  --texto-claro: #f5efe0;
+  --texto-suave: #b9b3a3;
+  --carvao-900: #141c1c;
+  --carvao-800: #1e2a2a;
+  --carvao-700: #2a3939;
+  --carvao-600: #3b4d4d;
+  --ouro-400: #e0c27a;
+  --ouro-500: #c8a855;
+  --ouro-700: #9c8240;
+}
+
+/* header rolado: faixa creme com texto escuro */
+html[data-theme="light"] .header.is-scrolled {
+  --texto-claro: #1e2a2a;
+  --ouro-400: #7a5d14;
+}
+
+html[data-theme="light"] .header::before {
+  background: rgba(247, 240, 220, 0.92);
+  box-shadow: 0 6px 24px -12px rgba(30, 42, 42, 0.35);
+}
+
+html[data-theme="light"] .header:not(.is-scrolled)::before {
+  background: transparent;
+}
+
+/* gaveta do menu mobile: segue escura nos dois temas */
+@media (max-width: 1023px) {
+  html[data-theme="light"] .nav {
+    --texto-claro: #f5efe0;
+    --carvao-600: #3b4d4d;
+    --ouro-400: #e0c27a;
+  }
+
+  html[data-theme="light"] .header__toggle[aria-expanded="true"]::before,
+  html[data-theme="light"] .header__toggle[aria-expanded="true"]::after {
+    background: #f5efe0;
+  }
+
+  html[data-theme="light"] .header:has(.header__toggle[aria-expanded="true"]) .theme-toggle {
+    color: #f5efe0;
+  }
+}
+
+/* textos que ficavam sobre ouro/vermelho e dependiam de token escuro */
+html[data-theme="light"] .tabs__tab[aria-selected="true"],
+html[data-theme="light"] .pack__badge,
+html[data-theme="light"] .steps__item::before {
+  color: #1e2a2a;
+}
+
+html[data-theme="light"] .areas__chip--home {
+  color: var(--creme-50);
+}
+
+html[data-theme="light"] .pack--rec {
+  background: linear-gradient(180deg, #fff6df 0%, #ffffff 65%);
+}
+
+html[data-theme="light"] .whatsapp-float::before {
+  background: #1e2a2a;
+  border-color: #3b4d4d;
+}
+
+html[data-theme="light"] .menu__price-note {
+  background: rgba(30, 42, 42, 0.05);
+}
+
+html[data-theme="light"] .tabs__list,
+html[data-theme="light"] .hero .btn--ghost {
+  border-color: var(--carvao-600);
+}
+
+html[data-theme="light"] .steps__item:not(:last-child)::after {
+  border-color: #b79d52;
+}
+
+html[data-theme="light"] .menu__note {
+  border-color: #7a5d14;
+}
+
+html[data-theme="light"] .numbers,
+html[data-theme="light"] .quote {
+  --texto-claro: #f5efe0;
+}
+
+html[data-theme="light"] .footer {
+  border-top: 1px solid var(--carvao-600);
+}
+
+html[data-theme="light"] .areas__chip:hover,
+html[data-theme="light"] .zone__btn:hover {
+  color: var(--creme-50);
+  background: var(--brasa-700);
+  border-color: var(--brasa-700);
+}
+
+html[data-theme="light"] .zone__fee,
+html[data-theme="light"] .areamap__status a {
+  color: #7a1f1c;
+}
+
+html[data-theme="light"] .zone.is-selected,
+html[data-theme="light"] .pack--rec {
+  box-shadow: 0 0 0 1px #7a5d14, 0 12px 28px -14px rgba(30, 42, 42, 0.4);
+}
+
+.pack__price strong {
+  color: var(--texto-claro);
+}
+
+/* o color herdado do body vem do tema claro: restaura nas superfícies que seguem escuras */
+html[data-theme="light"] :is(.hero, .dock, .summary, .lightbox) {
+  color: var(--texto-claro);
+}
+
+html[data-theme="light"] .packs {
+  background-image: radial-gradient(70% 60% at 50% 0%, rgba(200, 168, 85, 0.22), transparent 70%);
+}

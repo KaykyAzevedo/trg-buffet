@@ -121,3 +121,11 @@ SVG estilizado (sem bibliotecas, fora de escala) na seção `#bairros` do `index
 - Para mudar uma área de faixa, troque o `data-region` e a classe `area--...` (cor).
 - Clicar (ou Enter/Espaço) numa área escolhe a região no formulário e preenche o bairro se estiver vazio. A lista "Faixas de frete" ao lado é a alternativa acessível/mobile.
 - Os nomes dentro do mapa são escondidos abaixo de 640px (não cabem); o texto de apoio mostra o nome e o frete.
+
+## Tema claro / escuro
+
+- Botão no header (`[data-theme-toggle]`). Na 1ª visita segue `prefers-color-scheme`; a escolha fica em `localStorage` (`trg-theme`, com try/catch: se o armazenamento estiver bloqueado, vale só na visita). Sem escolha salva, acompanha mudanças do sistema.
+- Um script inline no `<head>` aplica `data-theme` no `<html>` antes da 1ª pintura (sem flash) e ajusta o `theme-color`: `#1E2A2A` (escuro) / `#F7F0DC` (claro). `color-scheme: dark light` declarado.
+- Tema escuro = identidade original (seções escuras alternadas com creme). Tema claro: seções escuras viram creme (tokens redefinidos em `html[data-theme="light"]`, bloco 22 do CSS); hero com foto, barra inferior, resumo da calculadora, lightbox e mapa continuam escuros.
+- Para ajustar cores do tema claro, edite o bloco `html[data-theme="light"]` (tokens `--carvao-*`, `--texto-*`, `--ouro-*`).
+- `manifest.webmanifest` mantém `theme_color` escuro; a imagem Open Graph é única (não varia por tema).
