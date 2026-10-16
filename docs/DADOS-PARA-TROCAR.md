@@ -147,3 +147,14 @@ Para ativar: em `SITE.heroVideo` ponha `enabled: true` (e ajuste `src` se mudar 
     ffmpeg -i original.mp4 -an -vf "scale=1280:-2,fps=24" -c:v libx264 -crf 30 -preset slow -movflags +faststart assets/video/hero.mp4
 
 Se usar vídeo de banco (Pexels/Pixabay/Unsplash, licença livre), registre o crédito em `docs/CREDITOS-FOTOS.md`.
+
+## Dados em JSON (arquitetura atual)
+
+**Os dados editáveis agora ficam em `data/site-data.json`** (contato, calculadora, agenda, cardápio, cardápio montável, pacotes e avaliações). O `js/main.js` carrega esse arquivo ao abrir a página; se a rede ou o arquivo falharem (ou o JSON estiver quebrado/inválido), o site usa os mesmos dados **embutidos em `js/site.js`** (`DEFAULTS`), então nunca fica sem conteúdo nem offline.
+
+- Chaves aceitas no JSON: `whatsapp`, `phoneLabel`, `email`, `instagram`, `address`, `hours`, `quote`, `agenda`, `cardapio`, `menu`, `packages`, `reviews`. Objetos são mesclados com os dados embutidos; listas substituem a lista inteira.
+- Configurações técnicas (`SITE.analytics`, `SITE.heroVideo`) continuam no topo de `js/main.js` e **não** podem ser alteradas pelo JSON.
+- As tabelas das seções anteriores deste arquivo continuam valendo, mas o valor "de verdade" está no JSON (por exemplo, `SITE.quote.basePerPerson` = `quote.basePerPerson` no JSON). Ao mudar o JSON, mantenha `DEFAULTS` em `js/site.js` equivalente se quiser que o fallback offline reflita os mesmos valores.
+- Guarnições do cardápio montável = itens da categoria `guarnicoes` do cardápio (o `id` de cada guarnição é o nome sem acentos, ex.: `molho-a-campanha`; os pacotes usam esses ids).
+- Textos soltos no HTML (ex.: "R$ 90" no hero, FAQ, JSON-LD de SEO) são estáticos: se mudar o preço-base, atualize-os também.
+- O `service worker` busca `data/site-data.json` pela rede primeiro (conteúdo sempre atual) e usa o cache só se estiver offline.

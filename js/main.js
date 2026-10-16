@@ -4,110 +4,40 @@
 (function () {
   'use strict';
 
-  /* ==== DADOS DO NEGÓCIO (fictícios) — único bloco para trocar. Ver docs/DADOS-PARA-TROCAR.md ==== */
-  var SITE = {
-    whatsapp: '5521974318206',               // DDI+DDD+número, só dígitos
-    phoneLabel: '(21) 97431-8206',
-    email: 'contato@trgbuffet.com.br',
-    instagram: 'trgbuffet',                  // sem @
-    address: ['Rua Marechal Fontenele, 1200', 'Realengo, Rio de Janeiro - RJ', 'CEP 21730-000'],
-    hours: 'Atendimento: seg. a sáb., das 8h às 19h',
+  /* ==== CONFIGURAÇÃO ====
+     Os DADOS do negócio (contato, preços, regiões, cardápio, pacotes, agenda, avaliações) vivem em
+     js/site.js (valores embutidos, usados se a rede falhar) e em data/site-data.json (editável pelo painel /admin/).
+     Aqui ficam só as opções técnicas que o JSON não altera. Ver docs/DADOS-PARA-TROCAR.md. */
+  var TRG = window.TRG;
+  var SITE = TRG.clone(TRG.defaults);
 
-    /* ---- Calculadora de orçamento + verificador de data (valores inventados) ---- */
-    quote: {
-      basePerPerson: 90,                     // R$ por pessoa (base de 100 convidados)
-      baseGuests: 100,
-      minGuests: 30,
-      maxGuests: 500,
-      defaultGuests: 100,
-      smallEvent: [                          // acréscimo por pessoa em eventos menores
-        { upTo: 49, add: 15 },
-        { upTo: 99, add: 5 }
-      ],
-      regions: [                             // frete/região: acréscimo por pessoa (mín–máx)
-        { id: 'realengo', label: 'Realengo e vizinhos (Bangu, Padre Miguel, Vila Militar, Sulacap…)', short: 'Realengo e vizinhos', addMin: 0, addMax: 0 },
-        { id: 'oeste', label: 'Zona Oeste próxima (Campo Grande, Santa Cruz, Jacarepaguá…)', short: 'Zona Oeste próxima', addMin: 15, addMax: 15 },
-        { id: 'rj', label: 'Demais regiões do Rio (Centro, Zonas Sul e Norte, Barra…)', short: 'Demais regiões do RJ', addMin: 30, addMax: 40 }
-      ],
-      drinksPerPerson: 12,                   // bebidas incluídas
-      dishesPerPerson: 8,                    // louça em vez de descartável
-      dessertPerPerson: 9,                   // sobremesas opcionais
-      extras: [                              // adicionais com quantidade
-        { id: 'garcom', label: 'Garçom', price: 180, unit: 'cada', max: 8 },
-        { id: 'churrasqueiro', label: 'Churrasqueiro', price: 250, unit: 'cada', max: 3 }
-      ],
-      variationPct: 5,                       // margem da faixa estimada (± %)
-      pixPercent: 50,                        // entrada via PIX
-      minLeadDays: 7,                        // antecedência mínima para consultar/reservar
-      maxMonthsAhead: 12,                    // até quantos meses à frente consultar
-      closedWeekdays: [],                    // dias da semana sem atendimento (0 = domingo)
-      busyDates: [                           // datas ocupadas (AAAA-MM-DD), inventadas
-        '2026-10-24', '2026-10-31', '2026-11-07', '2026-11-14', '2026-11-15', '2026-11-21',
-        '2026-11-28', '2026-12-05', '2026-12-12', '2026-12-19', '2026-12-20', '2026-12-26',
-        '2027-01-01', '2027-01-09', '2027-01-16', '2027-01-23', '2027-02-06', '2027-02-13',
-        '2027-02-20', '2027-03-06', '2027-03-20', '2027-04-03', '2027-04-17'
-      ]
-    },
-
-    /* ---- Cardápio montável (itens do buffet completo; preços das carnes extras inventados) ---- */
-    menu: {
-      sidesMax: 5,                           // quantas guarnições o cliente pode escolher
-      sides: [
-        { id: 'arroz', label: 'Arroz' },
-        { id: 'farofa', label: 'Farofa' },
-        { id: 'molho', label: 'Molho à campanha' },
-        { id: 'salpicao', label: 'Salpicão' },
-        { id: 'macarrao', label: 'Salada de macarrão' },
-        { id: 'caprese', label: 'Salada caprese' },
-        { id: 'batata', label: 'Batata frita' }
-      ],
-      soups: [                               // um caldo à escolha
-        { id: 'ervilha', label: 'Sopa de ervilha' },
-        { id: 'verde', label: 'Caldo verde' },
-        { id: 'feijao', label: 'Feijão amigo' }
-      ],
-      extraMeats: [                          // porção extra: acréscimo por pessoa
-        { id: 'picanha', label: 'Picanha', perPerson: 14 },
-        { id: 'cupim', label: 'Cupim', perPerson: 10 },
-        { id: 'copa', label: 'Copa lombo suíno', perPerson: 6 },
-        { id: 'polpetone', label: 'Polpetone recheado com provolone', perPerson: 5 },
-        { id: 'coalho', label: 'Queijo coalho', perPerson: 4 }
-      ]
-    },
-
-    /* ---- Pacotes (inventados, partem do buffet completo de R$ 90/pessoa) ---- */
-    packages: [
-      {
-        id: 'essencial', name: 'Essencial', tagline: 'O buffet completo, sem enfeite',
-        sides: ['arroz', 'farofa', 'molho'], soup: '', drinks: false, dishes: false, dessert: false, meats: [], extras: {}
-      },
-      {
-        id: 'completo', name: 'Completo', tagline: 'O que a maioria das festas pede', recommended: true,
-        sides: ['arroz', 'farofa', 'molho', 'salpicao', 'batata'], soup: '', drinks: true, dishes: false, dessert: false, meats: ['picanha'], extras: {}
-      },
-      {
-        id: 'premium', name: 'Premium', tagline: 'Para você só curtir a festa',
-        sides: ['arroz', 'farofa', 'molho', 'salpicao', 'caprese'], soup: '', drinks: true, dishes: true, dessert: true,
-        meats: ['picanha', 'cupim'], extras: { garcom: 2, churrasqueiro: 1 }
-      }
-    ],
-
-    /* ---- Vídeo do hero (opcional): ponha o arquivo em `src` e mude enabled para true ---- */
-    heroVideo: {
-      enabled: false,
-      src: 'assets/video/hero.mp4'
-    },
-
-    /* ---- Analytics (opcional). Com provider vazio NADA é carregado nem enviado. ---- */
-    analytics: {
-      provider: '',                          // '' (desligado) | 'plausible' | 'ga4'
-      plausibleDomain: '',                   // ex.: 'trgbuffet.com.br' (obrigatório p/ plausible)
-      plausibleScript: 'https://plausible.io/js/script.js',   // ou a URL do seu servidor Plausible
-      ga4Id: '',                             // ex.: 'G-XXXXXXXXXX' (obrigatório p/ ga4)
-      respectDoNotTrack: true                // não carrega se o navegador enviar Do Not Track
-    }
+  /* ---- Vídeo do hero (opcional): ponha o arquivo em `src` e mude enabled para true ---- */
+  SITE.heroVideo = {
+    enabled: false,
+    src: 'assets/video/hero.mp4'
   };
+
+  /* ---- Analytics (opcional). Com provider vazio NADA é carregado nem enviado. ---- */
+  SITE.analytics = {
+    provider: '',                          // '' (desligado) | 'plausible' | 'ga4'
+    plausibleDomain: '',                   // ex.: 'trgbuffet.com.br' (obrigatório p/ plausible)
+    plausibleScript: 'https://plausible.io/js/script.js',   // ou a URL do seu servidor Plausible
+    ga4Id: '',                             // ex.: 'G-XXXXXXXXXX' (obrigatório p/ ga4)
+    respectDoNotTrack: true                // não carrega se o navegador enviar Do Not Track
+  };
+
   var WHATSAPP_NUMBER = SITE.whatsapp;
+
+  function boot() {
+  WHATSAPP_NUMBER = SITE.whatsapp;
+
+  // guarnições do cardápio montável = itens da categoria "guarnicoes" do cardápio
+  (function () {
+    var cat = (SITE.cardapio.categorias || []).filter(function (c) { return c.id === 'guarnicoes'; })[0];
+    var items = [];
+    if (cat) (cat.grupos || []).forEach(function (g) { (g.itens || []).forEach(function (n) { items.push(n); }); });
+    SITE.menu.sides = items.map(function (n) { return { id: TRG.slug(n), label: n }; });
+  })();
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -372,6 +302,61 @@
     }
   }
 
+  /* ---------- Cardápio a partir dos dados (SITE.cardapio) ---------- */
+  (function () {
+    var root = $('[data-tabs]');
+    var cats = SITE.cardapio && SITE.cardapio.categorias;
+    if (!root || !cats || !cats.length) return;
+    var list = $('[role="tablist"]', root);
+    $all('.tabs__panel', root).forEach(function (p) { p.parentNode.removeChild(p); });
+    list.innerHTML = '';
+    cats.forEach(function (c, i) {
+      var id = TRG.slug(c.id || c.nome) || ('cat' + i);
+      var tab = document.createElement('button');
+      tab.className = 'tabs__tab';
+      tab.type = 'button';
+      tab.id = 'tab-' + id;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', 'painel-' + id);
+      tab.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      if (i) tab.tabIndex = -1;
+      tab.textContent = c.nome;
+      list.appendChild(tab);
+
+      var panel = document.createElement('div');
+      panel.className = 'tabs__panel';
+      panel.id = 'painel-' + id;
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', tab.id);
+      panel.tabIndex = 0;
+      panel.hidden = i !== 0;
+      if (c.nota) {
+        var n = document.createElement('p');
+        n.className = 'menu__note';
+        n.textContent = c.nota;
+        panel.appendChild(n);
+      }
+      (c.grupos || []).forEach(function (g) {
+        if (g.titulo) {
+          var h = document.createElement('h3');
+          h.className = 'menu__group-title';
+          h.textContent = g.titulo;
+          panel.appendChild(h);
+        }
+        var ul = document.createElement('ul');
+        ul.className = 'menu__list';
+        (g.itens || []).forEach(function (t) {
+          var li = document.createElement('li');
+          li.className = 'menu__item';
+          li.textContent = t;
+          ul.appendChild(li);
+        });
+        panel.appendChild(ul);
+      });
+      root.appendChild(panel);
+    });
+  })();
+
   /* ---------- Abas do cardápio (WAI-ARIA tabs) ---------- */
   $all('[data-tabs]').forEach(function (root) {
     var list = $('[role="tablist"]', root);
@@ -558,7 +543,7 @@
     var minDate = addDays(today, Q.minLeadDays);
     var maxDate = new Date(today.getFullYear(), today.getMonth() + Q.maxMonthsAhead, today.getDate());
     var busy = {};
-    Q.busyDates.forEach(function (s) { busy[s] = true; });
+    ((SITE.agenda && SITE.agenda.busyDates) || []).forEach(function (b) { busy[typeof b === 'string' ? b : b.data] = true; });
 
     // 'free' | 'busy' | 'soon' | 'far'
     function dateState(d) {
@@ -1302,4 +1287,13 @@
       startX = null;
     }, { passive: true });
   }
+  }
+
+  /* carrega data/site-data.json (com fallback embutido) e só então monta a página */
+  TRG.load({ url: 'data/site-data.json' }).then(function (r) {
+    Object.keys(r.data).forEach(function (k) { SITE[k] = r.data[k]; });
+    SITE.dataSource = r.source;
+    document.documentElement.setAttribute('data-source', r.source);
+    boot();
+  });
 })();
