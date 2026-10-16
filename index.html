@@ -412,7 +412,27 @@
             </fieldset>
 
             <fieldset class="form__group">
-              <legend class="form__legend"><span class="form__step" aria-hidden="true">2</span>Serviço</legend>
+              <legend class="form__legend"><span class="form__step" aria-hidden="true">2</span>Cardápio</legend>
+
+              <div class="form__field">
+                <span class="form__label" id="lbl-sides">Guarnições <small class="form__count" data-sides-count></small></span>
+                <div class="checks" role="group" aria-labelledby="lbl-sides" data-sides></div>
+                <p class="form__help" data-sides-hint></p>
+              </div>
+
+              <div class="form__field">
+                <span class="form__label" id="lbl-soup">Caldo</span>
+                <div class="choices" role="radiogroup" aria-labelledby="lbl-soup" data-soups></div>
+              </div>
+
+              <div class="form__field">
+                <span class="form__label" id="lbl-meats">Carnes extras (porção a mais)</span>
+                <div class="checks" role="group" aria-labelledby="lbl-meats" data-meats></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form__group">
+              <legend class="form__legend"><span class="form__step" aria-hidden="true">3</span>Serviço</legend>
 
               <div class="form__field">
                 <span class="form__label" id="lbl-bebidas">Bebidas</span>
@@ -440,7 +460,7 @@
             </fieldset>
 
             <fieldset class="form__group">
-              <legend class="form__legend"><span class="form__step" aria-hidden="true">3</span>Data do evento</legend>
+              <legend class="form__legend"><span class="form__step" aria-hidden="true">4</span>Data do evento</legend>
 
               <div class="form__field">
                 <label class="form__label" for="orc-data">Data</label>

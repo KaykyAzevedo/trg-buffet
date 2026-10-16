@@ -68,3 +68,16 @@ Tudo fica em **`js/main.js` → `SITE.quote`** (bloco no topo). Os valores são 
 | Datas ocupadas | `busyDates` (`AAAA-MM-DD`) | lista inventada de out/2026 a abr/2027 |
 
 Como funciona: a faixa por pessoa é `(base + evento pequeno + região + opções) ± variationPct`; o total soma os adicionais. A mensagem do WhatsApp usa os mesmos dados do formulário (pessoas, região, bairro, data, bebidas, material, sobremesas, adicionais e estimativa). O verificador de data é uma **consulta preliminar sem backend**: lê só `busyDates`. Para ficar útil, mantenha essa lista atualizada (ou, no futuro, troque por uma agenda real).
+
+## Cardápio montável
+
+Em **`js/main.js` → `SITE.menu`**:
+
+| Item | Chave | Valor atual |
+|---|---|---|
+| Máximo de guarnições | `sidesMax` | 5 (das 7 do buffet completo) |
+| Guarnições | `sides` (`id`, `label`) | arroz, farofa, molho à campanha, salpicão, salada de macarrão, salada caprese, batata frita |
+| Caldos | `soups` | sopa de ervilha, caldo verde, feijão amigo |
+| Carnes extras (porção a mais) | `extraMeats` (`perPerson`) | picanha +R$ 14, cupim +R$ 10, copa lombo +R$ 6, polpetone +R$ 5, queijo coalho +R$ 4 (por pessoa, inventados) |
+
+A seleção entra na estimativa (carnes extras somam por pessoa) e na mensagem do WhatsApp.

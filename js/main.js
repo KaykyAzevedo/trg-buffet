@@ -47,6 +47,32 @@
         '2027-01-01', '2027-01-09', '2027-01-16', '2027-01-23', '2027-02-06', '2027-02-13',
         '2027-02-20', '2027-03-06', '2027-03-20', '2027-04-03', '2027-04-17'
       ]
+    },
+
+    /* ---- Cardápio montável (itens do buffet completo; preços das carnes extras inventados) ---- */
+    menu: {
+      sidesMax: 5,                           // quantas guarnições o cliente pode escolher
+      sides: [
+        { id: 'arroz', label: 'Arroz' },
+        { id: 'farofa', label: 'Farofa' },
+        { id: 'molho', label: 'Molho à campanha' },
+        { id: 'salpicao', label: 'Salpicão' },
+        { id: 'macarrao', label: 'Salada de macarrão' },
+        { id: 'caprese', label: 'Salada caprese' },
+        { id: 'batata', label: 'Batata frita' }
+      ],
+      soups: [                               // um caldo à escolha
+        { id: 'ervilha', label: 'Sopa de ervilha' },
+        { id: 'verde', label: 'Caldo verde' },
+        { id: 'feijao', label: 'Feijão amigo' }
+      ],
+      extraMeats: [                          // porção extra: acréscimo por pessoa
+        { id: 'picanha', label: 'Picanha', perPerson: 14 },
+        { id: 'cupim', label: 'Cupim', perPerson: 10 },
+        { id: 'copa', label: 'Copa lombo suíno', perPerson: 6 },
+        { id: 'polpetone', label: 'Polpetone recheado com provolone', perPerson: 5 },
+        { id: 'coalho', label: 'Queijo coalho', perPerson: 4 }
+      ]
     }
   };
   var WHATSAPP_NUMBER = SITE.whatsapp;
@@ -384,6 +410,40 @@
     });
     extrasBox.className = 'extras';
 
+    /* ---- cardápio montável ---- */
+    var M = SITE.menu;
+    var sidesBox = $('[data-sides]', form), soupsBox = $('[data-soups]', form), meatsBox = $('[data-meats]', form);
+    M.sides.forEach(function (s) {
+      var l = document.createElement('label');
+      l.className = 'check';
+      l.innerHTML = '<input type="checkbox" name="guarnicao" value="' + s.id + '"><span class="check__box"></span>';
+      l.querySelector('.check__box').textContent = s.label;
+      sidesBox.appendChild(l);
+    });
+    soupsBox.innerHTML = '<label class="choice"><input type="radio" name="caldo" value="" checked><span class="choice__box">Definir depois</span></label>';
+    M.soups.forEach(function (s) {
+      var l = document.createElement('label');
+      l.className = 'choice';
+      l.innerHTML = '<input type="radio" name="caldo" value="' + s.id + '"><span class="choice__box"></span>';
+      l.querySelector('.choice__box').textContent = s.label;
+      soupsBox.appendChild(l);
+    });
+    M.extraMeats.forEach(function (m) {
+      var l = document.createElement('label');
+      l.className = 'check';
+      l.innerHTML = '<input type="checkbox" name="carne" value="' + m.id + '"><span class="check__box"><span></span> <small class="choice__fee">+' + brl(m.perPerson) + '/pessoa</small></span>';
+      l.querySelector('.check__box > span').textContent = m.label;
+      meatsBox.appendChild(l);
+    });
+    $('[data-sides-hint]', form).textContent = 'Escolha até ' + M.sidesMax + ' das ' + M.sides.length + ' opções. Dá para trocar depois, no atendimento.';
+
+    function syncSides() {
+      var boxes = $all('[name="guarnicao"]', form);
+      var n = boxes.filter(function (b) { return b.checked; }).length;
+      $('[data-sides-count]', form).textContent = '(' + n + ' de ' + M.sidesMax + ')';
+      boxes.forEach(function (b) { b.disabled = !b.checked && n >= M.sidesMax; });
+    }
+
     /* ---- cálculo ---- */
     function getState() {
       var g = parseInt(fPessoas.value, 10);
@@ -400,8 +460,15 @@
         drinks: form.elements.bebidas.value === 'sim',
         dishes: form.elements.louca.value === 'louca',
         dessert: form.elements.sobremesa.checked,
-        extras: extras
+        extras: extras,
+        sides: $all('[name="guarnicao"]:checked', form).map(function (b) { return lookup(M.sides, b.value); }),
+        soup: lookup(M.soups, form.elements.caldo.value),
+        meats: $all('[name="carne"]:checked', form).map(function (b) { return lookup(M.extraMeats, b.value); })
       };
+    }
+
+    function lookup(list, id) {
+      return list.filter(function (x) { return x.id === id; })[0] || null;
     }
 
     function estimate(st) {
@@ -411,7 +478,8 @@
         if (g <= Q.smallEvent[i].upTo) { small = Q.smallEvent[i].add; break; }
       }
       var rMin = st.region ? st.region.addMin : 0, rMax = st.region ? st.region.addMax : 0;
-      var opts = (st.drinks ? Q.drinksPerPerson : 0) + (st.dishes ? Q.dishesPerPerson : 0) + (st.dessert ? Q.dessertPerPerson : 0);
+      var opts = (st.drinks ? Q.drinksPerPerson : 0) + (st.dishes ? Q.dishesPerPerson : 0) + (st.dessert ? Q.dessertPerPerson : 0) +
+        st.meats.reduce(function (s, m) { return s + m.perPerson; }, 0);
       var v = Q.variationPct / 100;
       var perMin = Math.floor((Q.basePerPerson + small + rMin + opts) * (1 - v));
       var perMax = Math.ceil((Q.basePerPerson + small + rMax + opts) * (1 + v));
@@ -433,6 +501,7 @@
       if (st.drinks) lines.push(['Bebidas', '+' + brl(Q.drinksPerPerson) + '/pessoa']);
       if (st.dishes) lines.push(['Louça', '+' + brl(Q.dishesPerPerson) + '/pessoa']);
       if (st.dessert) lines.push(['Sobremesas', '+' + brl(Q.dessertPerPerson) + '/pessoa']);
+      st.meats.forEach(function (m) { lines.push([m.label + ' extra', '+' + brl(m.perPerson) + '/pessoa']); });
       st.extras.forEach(function (e) {
         lines.push([e.def.label + ' × ' + e.qty, brl(e.def.price * e.qty)]);
       });
@@ -484,6 +553,9 @@
         '• Região: ' + (st.region ? st.region.short || st.region.label : '___'),
         '• Bairro: ' + (fBairro.value.trim() || '___'),
         '• Data: ' + (d ? fmtBR(d) + availabilityNote() : '___'),
+        '• Guarnições (' + st.sides.length + '/' + M.sidesMax + '): ' + (st.sides.length ? st.sides.map(function (s) { return s.label; }).join(', ') : 'definir no atendimento'),
+        '• Caldo: ' + (st.soup ? st.soup.label : 'definir no atendimento'),
+        '• Carnes extras: ' + (st.meats.length ? st.meats.map(function (m) { return m.label; }).join(', ') : 'nenhuma'),
         '• Bebidas: ' + (st.drinks ? 'incluídas' : 'por minha conta'),
         '• Material: ' + (st.dishes ? 'louça' : 'descartável'),
         '• Sobremesas: ' + (st.dessert ? 'sim' : 'não'),
@@ -722,7 +794,10 @@
       if (e.target.getAttribute('aria-invalid') && e.target.value) setError(e.target, '');
       update();
     });
-    form.addEventListener('change', function (e) { if (e.target !== fData) update(); });
+    form.addEventListener('change', function (e) {
+      if (e.target.name === 'guarnicao') syncSides();
+      if (e.target !== fData) update();
+    });
     fPessoas.addEventListener('blur', function () {
       var n = parseInt(fPessoas.value, 10);
       if (fPessoas.value !== '' && (n < Q.minGuests || n > Q.maxGuests)) {
@@ -745,6 +820,7 @@
     });
 
     renderCalendar(false);
+    syncSides();
     update();
   }
 
