@@ -85,3 +85,7 @@ A seleção entra na estimativa (carnes extras somam por pessoa) e na mensagem d
 ## Pacotes
 
 Em **`js/main.js` → `SITE.packages`** (3 pacotes inventados: Essencial, Completo recomendado, Premium). Cada item define: `sides` (ids das guarnições), `soup`, `drinks`, `dishes`, `dessert`, `meats` (ids de `SITE.menu.extraMeats`) e `extras` (`{ garcom: 2, churrasqueiro: 1 }`). O preço "a partir de" é calculado com `SITE.quote` (base + opções, Realengo, 100 convidados). Para destacar outro pacote, mova `recommended: true`. O botão pré-seleciona a calculadora e leva o cliente ao formulário.
+
+## Barra fixa inferior (mobile)
+
+`<nav class="dock">` no fim do `index.html` (3 atalhos: Orçamento, WhatsApp, Cardápio). Aparece só abaixo de 768px; o botão flutuante do WhatsApp sobe para ficar acima dela. O link do WhatsApp usa `data-whatsapp`, então o número vem de `SITE.whatsapp`. Para mudar a altura, ajuste `--dock-h` no CSS.
