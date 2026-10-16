@@ -503,5 +503,92 @@
       .catch(function (err) { clearTimeout(timer); return done('embutido', [String(err && err.message || err)]); });
   }
 
-  window.TRG = { defaults: DEFAULTS, allowed: ALLOWED, clone: clone, merge: merge, slug: slug, validate: validate, load: load };
+
+  /* ---------- Agenda: planilha publicada como CSV (opcional) ---------- */
+
+  // "2026-11-07" ou "07/11/2026" (dia/mês/ano) -> "2026-11-07"; inválido -> ''
+  function parseDate(s) {
+    s = String(s || '').trim().replace(/^["']|["']$/g, '');
+    var y, m, d, t;
+    if ((t = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s].*)?$/.exec(s))) { y = +t[1]; m = +t[2]; d = +t[3]; }
+    else if ((t = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(s))) { d = +t[1]; m = +t[2]; y = +t[3]; if (y < 100) y += 2000; }
+    else return '';
+    var dt = new Date(y, m - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return '';
+    return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  }
+
+  // CSV simples (aspas, vírgula ou ponto e vírgula). Coluna 1 = data, coluna 2 (opcional) = motivo.
+  function parseCsv(text) {
+    text = String(text || '').replace(/^\uFEFF/, '');
+    var firstLine = text.split(/\r?\n/, 1)[0] || '';
+    var delim = (firstLine.indexOf(';') !== -1 && firstLine.indexOf(',') === -1) ? ';' : ',';
+    var rows = [], row = [], cell = '', q = false, i, c;
+    for (i = 0; i < text.length; i++) {
+      c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === delim) { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    var out = [], seen = {};
+    rows.forEach(function (r) {
+      var d = parseDate(r[0]);
+      if (!d || seen[d]) return;           // linha de cabeçalho/vazia/inválida ou repetida
+      seen[d] = true;
+      out.push({ data: d, motivo: String(r[1] || '').trim() });
+    });
+    out.sort(function (a, b) { return a.data < b.data ? -1 : 1; });
+    return out;
+  }
+
+  var AGENDA_CACHE_KEY = 'trg-agenda-v1';
+
+  function cacheGet(url, minutes) {
+    try {
+      var c = JSON.parse(localStorage.getItem(AGENDA_CACHE_KEY) || 'null');
+      if (c && c.url === url && Date.now() - c.t < minutes * 60000) return c;
+    } catch (e) { /* sem storage */ }
+    return null;
+  }
+  function cacheSet(url, dates) {
+    try { localStorage.setItem(AGENDA_CACHE_KEY, JSON.stringify({ url: url, t: Date.now(), dates: dates })); } catch (e) { /* ignora */ }
+  }
+
+  /* Resolve sempre: { dates:[{data,motivo}], source:'json'|'planilha'|'cache', error? }.
+     Sem csvUrl -> datas do JSON. Planilha com erro/indisponível -> volta para as datas do JSON. */
+  function loadAgenda(agenda, opts) {
+    opts = opts || {};
+    var fallback = (agenda.busyDates || []).map(function (b) { return typeof b === 'string' ? { data: b, motivo: '' } : b; });
+    var url = (agenda.csvUrl || '').trim();
+    if (!url || !window.fetch) return Promise.resolve({ dates: fallback, source: 'json' });
+    var minutes = typeof agenda.cacheMinutes === 'number' ? agenda.cacheMinutes : 10;
+    var hit = opts.noCache ? null : cacheGet(url, minutes);
+    if (hit) return Promise.resolve({ dates: hit.dates, source: 'cache', at: hit.t });
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, opts.timeout || 4000);
+    return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+      .then(function (text) {
+        clearTimeout(timer);
+        if (/^\s*<(!doctype|html)/i.test(text)) throw new Error('a planilha não está publicada como CSV (veio uma página HTML)');
+        var dates = parseCsv(text);
+        cacheSet(url, dates);
+        return { dates: dates, source: 'planilha', at: Date.now() };
+      })
+      .catch(function (err) {
+        clearTimeout(timer);
+        if (window.console) console.warn('[TRG] agenda: planilha indisponível, usando datas do site-data.json:', err && err.message || err);
+        return { dates: fallback, source: 'json', error: String(err && err.message || err) };
+      });
+  }
+
+  window.TRG = { defaults: DEFAULTS, allowed: ALLOWED, clone: clone, merge: merge, slug: slug, validate: validate, load: load,
+    parseCsv: parseCsv, parseDate: parseDate, loadAgenda: loadAgenda };
 })();

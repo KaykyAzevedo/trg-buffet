@@ -158,3 +158,25 @@ Se usar vídeo de banco (Pexels/Pixabay/Unsplash, licença livre), registre o cr
 - Guarnições do cardápio montável = itens da categoria `guarnicoes` do cardápio (o `id` de cada guarnição é o nome sem acentos, ex.: `molho-a-campanha`; os pacotes usam esses ids).
 - Textos soltos no HTML (ex.: "R$ 90" no hero, FAQ, JSON-LD de SEO) são estáticos: se mudar o preço-base, atualize-os também.
 - O `service worker` busca `data/site-data.json` pela rede primeiro (conteúdo sempre atual) e usa o cache só se estiver offline.
+
+## Agenda (datas ocupadas)
+
+As datas ocupadas vêm de `agenda.busyDates` em `data/site-data.json` (lista de `{ "data": "AAAA-MM-DD", "motivo": "..." }`; o motivo é só para você, nunca aparece no site). **Opcionalmente** a agenda pode vir de uma **planilha do Google publicada como CSV**: preencha `agenda.csvUrl` (no JSON ou pelo painel). Vazio = só o JSON.
+
+Regras:
+- Com `csvUrl` preenchida, a planilha manda: as datas dela **substituem** as do JSON enquanto ela estiver acessível. Se a planilha falhar (offline, link errado, não publicada), o calendário usa as datas do JSON e mostra um aviso discreto.
+- O resultado é guardado no navegador por `agenda.cacheMinutes` minutos (padrão 10) para não consultar a planilha a cada visita; depois disso, é consultada de novo.
+- O calendário abre com as datas do JSON e **atualiza sozinho** quando a planilha responde. Se o cliente estiver com uma data ocupada selecionada, ele é avisado.
+- Colunas: **A = data**, B = motivo (opcional). Aceita `AAAA-MM-DD` (recomendado) ou `DD/MM/AAAA`. Cabeçalho, linhas vazias e datas inválidas são ignorados.
+
+### Passo a passo para o cliente publicar a planilha
+
+1. Abra o Google Planilhas e crie uma planilha com duas colunas: **data** (A) e **motivo** (B, opcional). Uma linha por data ocupada. Dica: formate a coluna A como *Texto simples* e digite `2026-12-05` (ano-mês-dia) para evitar confusão de formato.
+2. Menu **Arquivo > Compartilhar > Publicar na Web**.
+3. Em "Link", escolha a aba da agenda e, no segundo seletor, **Valores separados por vírgula (.csv)**. Clique em **Publicar** e confirme.
+4. Copie o link gerado (algo como `https://docs.google.com/spreadsheets/d/e/....../pub?output=csv`).
+5. Cole esse link em `agenda.csvUrl` (no painel `/admin/`, aba **Agenda**, ou direto no `data/site-data.json`) e publique.
+6. Para liberar ou bloquear uma data: edite a planilha. A mudança aparece no site em até `cacheMinutes` minutos (o Google também pode levar alguns minutos para atualizar o CSV publicado).
+7. Para parar de usar a planilha: apague o link em `agenda.csvUrl` (ou "Interromper publicação" no Google).
+
+Atenção: tudo o que está na planilha publicada é **público** (qualquer pessoa com o link vê). Não coloque nomes de clientes nem telefones nela; use só data e um motivo genérico (ex.: "reservado").

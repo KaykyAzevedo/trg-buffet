@@ -3616,3 +3616,13 @@ html[data-theme="light"] .packs {
     display: none;
   }
 }
+
+.cal__source {
+  margin-top: var(--sp-2);
+  font-size: 0.75rem;
+  color: #4a5a5a;
+}
+
+.cal__source:empty {
+  display: none;
+}

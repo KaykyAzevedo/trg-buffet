@@ -543,7 +543,12 @@
     var minDate = addDays(today, Q.minLeadDays);
     var maxDate = new Date(today.getFullYear(), today.getMonth() + Q.maxMonthsAhead, today.getDate());
     var busy = {};
-    ((SITE.agenda && SITE.agenda.busyDates) || []).forEach(function (b) { busy[typeof b === 'string' ? b : b.data] = true; });
+    var calSource = null;
+    function setBusy(list) {
+      busy = {};
+      list.forEach(function (b) { busy[typeof b === 'string' ? b : b.data] = true; });
+    }
+    setBusy((SITE.agenda && SITE.agenda.busyDates) || []);
 
     // 'free' | 'busy' | 'soon' | 'far'
     function dateState(d) {
@@ -1205,6 +1210,28 @@
     renderCalendar(false);
     syncSides();
     update();
+
+    /* ---- agenda: planilha publicada (opcional) atualiza o calendário depois que a página abre ---- */
+    calSource = document.createElement('p');
+    calSource.className = 'cal__source';
+    $('.cal__keys', calRoot).insertAdjacentElement('afterend', calSource);
+    TRG.loadAgenda(SITE.agenda).then(function (r) {
+      if (r.source === 'json') {
+        calSource.textContent = r.error ? 'Agenda: planilha indisponível agora, mostrando as datas salvas no site.' : '';
+        return;
+      }
+      setBusy(r.dates);
+      renderCalendar(false);
+      var cur = fromISO(fData.value);
+      if (cur) {
+        var st = dateState(cur);
+        if (st === 'busy') { showStatus('busy', cur); setError(fData, 'Essa data acabou de ficar indisponível. Escolha uma das sugestões abaixo do calendário.'); }
+        else if (st === 'free') showStatus('free', cur);
+      }
+      renderPreview();
+      var when = r.at ? new Date(r.at) : new Date();
+      calSource.textContent = 'Agenda atualizada pela planilha' + (r.source === 'cache' ? ' (cache de poucos minutos)' : '') + ' às ' + pad(when.getHours()) + ':' + pad(when.getMinutes()) + '.';
+    });
   }
 
   /* ---------- Lightbox da galeria ---------- */
