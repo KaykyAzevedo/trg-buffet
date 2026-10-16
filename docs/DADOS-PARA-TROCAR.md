@@ -132,17 +132,17 @@ SVG estilizado (sem bibliotecas, fora de escala) na seção `#bairros` do `index
 
 ## Vídeo no hero (opcional)
 
-O site já tem o suporte completo; **falta apenas o arquivo** `assets/video/hero.mp4` (não incluído: sem vídeo real do negócio e sem ffmpeg para comprimir um de banco). Enquanto o arquivo não existir, nada é baixado e o hero usa só a foto.
+O site já tem o suporte completo; **falta apenas o arquivo** `assets/video/hero.mp4` (não incluído: sem vídeo real do negócio e sem ffmpeg para comprimir um de banco). Por padrão `SITE.heroVideo.enabled` é `false`: nada é pedido nem baixado e o hero usa só a foto.
 
 Como funciona (`js/main.js`, bloco "Vídeo do hero"; `<div data-hero-video>` no início do hero):
 
-- `<video muted loop playsinline preload="none">` com `poster` = foto atual do hero (800px no mobile). A fonte só é definida depois do `load`, se o arquivo existir (requisição HEAD).
+- `<video muted loop playsinline preload="none">` com `poster` = foto atual do hero (800px no mobile). A fonte só é definida depois do `load`, se o arquivo existir (requisição HEAD; se der 404 o hero segue com a foto).
 - **Não carrega** com `prefers-reduced-motion`, `saveData` ligado, conexão 2G/3G ou `downlink` abaixo de 1,5 Mbps, nem em `file://`.
 - Pausa fora da tela e com a aba oculta; o botão "Pausar vídeo" (WCAG 2.2.2) aparece quando está tocando.
 - Há um overlay escuro por cima para manter o contraste do texto.
 - O service worker não cacheia vídeo.
 
-Para ativar: coloque um MP4 **H.264, sem áudio, 1280×720, 6 a 12 s em loop, até ~2 MB** em `assets/video/hero.mp4`. Exemplo com ffmpeg:
+Para ativar: em `SITE.heroVideo` ponha `enabled: true` (e ajuste `src` se mudar o caminho) e coloque um MP4 **H.264, sem áudio, 1280×720, 6 a 12 s em loop, até ~2 MB** em `assets/video/hero.mp4`. Exemplo com ffmpeg:
 
     ffmpeg -i original.mp4 -an -vf "scale=1280:-2,fps=24" -c:v libx264 -crf 30 -preset slow -movflags +faststart assets/video/hero.mp4
 

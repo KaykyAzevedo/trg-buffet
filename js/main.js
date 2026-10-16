@@ -92,6 +92,12 @@
       }
     ],
 
+    /* ---- Vídeo do hero (opcional): ponha o arquivo em `src` e mude enabled para true ---- */
+    heroVideo: {
+      enabled: false,
+      src: 'assets/video/hero.mp4'
+    },
+
     /* ---- Analytics (opcional). Com provider vazio NADA é carregado nem enviado. ---- */
     analytics: {
       provider: '',                          // '' (desligado) | 'plausible' | 'ga4'
@@ -293,7 +299,8 @@
     if (!wrap) return;
     var video = $('video', wrap);
     var btn = $('[data-hero-video-toggle]');
-    var src = video.getAttribute('data-src');
+    var HV = SITE.heroVideo || {};
+    var src = HV.enabled ? (HV.src || video.getAttribute('data-src')) : '';
     var userPaused = false;
 
     function connectionOk() {
