@@ -287,6 +287,66 @@
     });
   });
 
+  /* ---------- Vídeo do hero (opcional) ---------- */
+  (function () {
+    var wrap = $('[data-hero-video]');
+    if (!wrap) return;
+    var video = $('video', wrap);
+    var btn = $('[data-hero-video-toggle]');
+    var src = video.getAttribute('data-src');
+    var userPaused = false;
+
+    function connectionOk() {
+      var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (!c) return true;
+      if (c.saveData) return false;
+      if (/(^|-)2g$|^3g$/.test(c.effectiveType || '')) return false;
+      if (typeof c.downlink === 'number' && c.downlink > 0 && c.downlink < 1.5) return false;
+      return true;
+    }
+
+    if (reduceMotion || !src || !connectionOk() || !/^https?:$/.test(location.protocol)) return;
+
+    function start() {
+      if (window.innerWidth < 640) video.setAttribute('poster', 'assets/fotos/hero-bg-800.webp');
+      video.addEventListener('playing', function () {
+        wrap.classList.add('is-playing');
+        btn.hidden = false;
+      });
+      video.addEventListener('error', function () { wrap.classList.remove('is-playing'); btn.hidden = true; });
+      video.src = src;
+      video.load();
+      var p = video.play();
+      if (p && p.catch) p.catch(function () { /* autoplay bloqueado: segue a foto */ });
+
+      // economiza bateria: pausa fora da tela e com a aba oculta
+      var visible = true;
+      function sync() {
+        if (userPaused) return;
+        if (visible && !document.hidden) { var q = video.play(); if (q && q.catch) q.catch(function () {}); }
+        else video.pause();
+      }
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (en) { visible = en[0].isIntersecting; sync(); }, { threshold: 0.05 }).observe(wrap);
+      }
+      document.addEventListener('visibilitychange', sync);
+
+      btn.addEventListener('click', function () {
+        userPaused = !userPaused;
+        btn.setAttribute('aria-pressed', String(userPaused));
+        $('span', btn).textContent = userPaused ? 'Reproduzir vídeo' : 'Pausar vídeo';
+        if (userPaused) video.pause(); else sync();
+      });
+    }
+
+    // só inicia se o arquivo existir (HEAD) e depois do carregamento, para não competir com o LCP
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        fetch(src, { method: 'HEAD' }).then(function (res) { if (res.ok) start(); }).catch(function () {});
+      }, 400);
+    });
+  })();
+
   /* ---------- Brasas no hero ---------- */
   var hero = $('.hero');
   if (hero && !reduceMotion) {

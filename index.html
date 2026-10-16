@@ -125,6 +125,10 @@
 
     <!-- HERO -->
     <section class="hero" id="inicio" aria-labelledby="hero-titulo">
+    <!-- Vídeo opcional: só carrega se assets/video/hero.mp4 existir e a conexão/preferências permitirem (ver docs) -->
+    <div class="hero__video" data-hero-video aria-hidden="true">
+      <video muted loop playsinline preload="none" tabindex="-1" poster="assets/fotos/hero-bg-1600.webp" data-src="assets/video/hero.mp4"></video>
+    </div>
       <div class="hero__inner container">
         <p class="hero__eyebrow">Buffet de churrasco em Realengo e região</p>
         <h1 class="hero__title" id="hero-titulo">O churrasco completo da sua festa, sem você preocupar com nada</h1>
@@ -138,6 +142,10 @@
           <li><strong>100</strong><span>convidados</span></li>
           <li><strong>6h</strong><span>de evento</span></li>
         </ul>
+        <button class="hero__video-toggle" type="button" hidden aria-pressed="false" data-hero-video-toggle>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path class="hv-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="hv-play" d="M8 5l11 7-11 7z"/></svg>
+          <span>Pausar vídeo</span>
+        </button>
         <picture class="hero__media">
           <!-- placeholder ilustrado: trocar por foto real -->
           <source type="image/webp" srcset="assets/fotos/hero-card-800.webp 800w, assets/fotos/hero-card-1600.webp 1600w" sizes="(min-width: 1024px) 560px, 100vw">

@@ -129,3 +129,21 @@ SVG estilizado (sem bibliotecas, fora de escala) na seção `#bairros` do `index
 - Tema escuro = identidade original (seções escuras alternadas com creme). Tema claro: seções escuras viram creme (tokens redefinidos em `html[data-theme="light"]`, bloco 22 do CSS); hero com foto, barra inferior, resumo da calculadora, lightbox e mapa continuam escuros.
 - Para ajustar cores do tema claro, edite o bloco `html[data-theme="light"]` (tokens `--carvao-*`, `--texto-*`, `--ouro-*`).
 - `manifest.webmanifest` mantém `theme_color` escuro; a imagem Open Graph é única (não varia por tema).
+
+## Vídeo no hero (opcional)
+
+O site já tem o suporte completo; **falta apenas o arquivo** `assets/video/hero.mp4` (não incluído: sem vídeo real do negócio e sem ffmpeg para comprimir um de banco). Enquanto o arquivo não existir, nada é baixado e o hero usa só a foto.
+
+Como funciona (`js/main.js`, bloco "Vídeo do hero"; `<div data-hero-video>` no início do hero):
+
+- `<video muted loop playsinline preload="none">` com `poster` = foto atual do hero (800px no mobile). A fonte só é definida depois do `load`, se o arquivo existir (requisição HEAD).
+- **Não carrega** com `prefers-reduced-motion`, `saveData` ligado, conexão 2G/3G ou `downlink` abaixo de 1,5 Mbps, nem em `file://`.
+- Pausa fora da tela e com a aba oculta; o botão "Pausar vídeo" (WCAG 2.2.2) aparece quando está tocando.
+- Há um overlay escuro por cima para manter o contraste do texto.
+- O service worker não cacheia vídeo.
+
+Para ativar: coloque um MP4 **H.264, sem áudio, 1280×720, 6 a 12 s em loop, até ~2 MB** em `assets/video/hero.mp4`. Exemplo com ffmpeg:
+
+    ffmpeg -i original.mp4 -an -vf "scale=1280:-2,fps=24" -c:v libx264 -crf 30 -preset slow -movflags +faststart assets/video/hero.mp4
+
+Se usar vídeo de banco (Pexels/Pixabay/Unsplash, licença livre), registre o crédito em `docs/CREDITOS-FOTOS.md`.

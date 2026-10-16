@@ -1,6 +1,6 @@
 /* TRG Buffet - service worker simples: cache estático + fallback offline.
    Para forçar atualização dos arquivos em cache, mude VERSION. */
-const VERSION = 'trg-buffet-v5';
+const VERSION = 'trg-buffet-v6';
 const CORE = [
   './',
   'index.html',
@@ -42,6 +42,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // não intercepta terceiros (analytics etc.)
+  if (req.destination === 'video' || req.headers.has('range')) return; // vídeo/parciais vão direto à rede
 
   // Páginas: rede primeiro, cache e depois página offline
   if (req.mode === 'navigate') {
