@@ -3159,3 +3159,199 @@ body.is-locked .dock {
 .tabs__list:not(.is-animated)::before {
   transition: none;
 }
+
+/* Mapa de bairros */
+.areamap {
+  display: grid;
+  gap: var(--sp-6);
+  margin-block: var(--sp-7) var(--sp-6);
+}
+
+.areamap__fig {
+  min-width: 0;
+}
+
+.areamap__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: var(--sh-2);
+}
+
+.areamap__sea {
+  fill: #0f1717;
+}
+
+.areamap__sea-label {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  fill: var(--ouro-700);
+  opacity: 0.8;
+}
+
+.area {
+  cursor: pointer;
+  outline: none;
+}
+
+.area polygon {
+  stroke: #0f1717;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  transition: fill var(--transition), stroke var(--transition), transform var(--transition);
+}
+
+.area--realengo polygon { fill: #8f2a27; }
+.area--oeste polygon { fill: #8a7338; }
+.area--rj polygon { fill: #3b4d4d; }
+
+.area text {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+  text-transform: uppercase;
+  fill: var(--creme-50);
+  pointer-events: none;
+}
+
+.area:hover polygon,
+.area:focus-visible polygon {
+  stroke: var(--ouro-400);
+  stroke-width: 4;
+}
+
+.area--realengo:hover polygon,
+.area--realengo:focus-visible polygon { fill: #b0332f; }
+.area--oeste:hover polygon,
+.area--oeste:focus-visible polygon { fill: #a98d46; }
+.area--rj:hover polygon,
+.area--rj:focus-visible polygon { fill: #4d6565; }
+
+.area.is-selected polygon {
+  stroke: var(--ouro-400);
+  stroke-width: 4;
+  fill-opacity: 1;
+}
+
+.area:focus-visible polygon {
+  stroke: #fff;
+  stroke-dasharray: 8 5;
+}
+
+.areamap__status {
+  min-height: 3em;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-small);
+  color: var(--texto-claro);
+}
+
+.areamap__status a {
+  color: var(--ouro-400);
+  font-weight: 600;
+}
+
+.areamap__title {
+  margin-bottom: var(--sp-3);
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ouro-400);
+}
+
+.areamap__zones {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.zone {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--carvao-700);
+  border: 1px solid var(--carvao-600);
+  border-radius: var(--r-md);
+  transition: border-color var(--transition);
+}
+
+.zone.is-selected {
+  border-color: var(--ouro-500);
+  box-shadow: var(--sh-ouro);
+}
+
+.zone__swatch {
+  width: 14px;
+  height: 14px;
+  margin-top: 5px;
+  border-radius: 4px;
+}
+
+.zone--realengo .zone__swatch { background: #b0332f; }
+.zone--oeste .zone__swatch { background: #a98d46; }
+.zone--rj .zone__swatch { background: #4d6565; }
+
+.zone__body {
+  display: grid;
+  gap: 2px;
+}
+
+.zone__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.zone__fee {
+  font-weight: 600;
+  color: var(--ouro-400);
+}
+
+.zone__areas {
+  font-size: var(--fs-small);
+  color: var(--texto-suave);
+}
+
+.zone__btn {
+  grid-column: 2;
+  justify-self: start;
+  min-height: 44px;
+  margin-top: var(--sp-2);
+  padding: 0 18px;
+  font-weight: 600;
+  color: var(--ouro-400);
+  background: transparent;
+  border: 1.5px solid var(--ouro-500);
+  border-radius: var(--r-pill);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.zone__btn:hover {
+  background: var(--ouro-500);
+  color: var(--carvao-900);
+}
+
+.areamap__note {
+  margin-top: var(--sp-3);
+  font-size: 0.8125rem;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 639px) {
+  /* nomes não cabem no mapa pequeno: o status e a lista de faixas trazem a informação */
+  .area text {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .areamap {
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+    align-items: start;
+  }
+}

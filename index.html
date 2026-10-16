@@ -369,7 +369,95 @@
       <div class="container">
         <p class="eyebrow">Onde a brasa chega</p>
         <h2 class="section__title" id="bairros-titulo">Bairros atendidos</h2>
-        <p class="section__lead">Saímos de Realengo e levamos o churrasco completo até você.</p>
+        <p class="section__lead">Saímos de Realengo e levamos o churrasco completo até você. Escolha a sua área no mapa para ver o frete.</p>
+        <div class="areamap">
+          <div class="areamap__fig">
+            <svg class="areamap__svg" viewBox="0 0 612 380" role="group" aria-label="Mapa estilizado da Zona Oeste do Rio de Janeiro com as áreas atendidas e as faixas de frete">
+              <defs>
+                <pattern id="sea" width="16" height="10" patternUnits="userSpaceOnUse"><path d="M0 5q4-4 8 0t8 0" fill="none" stroke="#c8a855" stroke-opacity=".12" stroke-width="1"/></pattern>
+              </defs>
+              <rect width="612" height="380" rx="20" class="areamap__sea"/>
+              <rect width="612" height="380" rx="20" fill="url(#sea)"/>
+              <g class="areamap__areas">
+            <g class="area area--oeste" data-area="Campo Grande" data-region="oeste" role="button" tabindex="0" aria-pressed="false" aria-label="Campo Grande">
+              <polygon points="30,120 120,120 140,200 70,215 20,190"/>
+              <text x="78" y="170" font-size="13">Campo Grande</text>
+            </g>
+            <g class="area area--realengo" data-area="Santíssimo" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Santíssimo">
+              <polygon points="70,215 140,200 130,255 60,270"/>
+              <text x="100" y="238" font-size="11">Santíssimo</text>
+            </g>
+            <g class="area area--oeste" data-area="Santa Cruz" data-region="oeste" role="button" tabindex="0" aria-pressed="false" aria-label="Santa Cruz">
+              <polygon points="60,270 130,255 215,270 190,350 70,340"/>
+              <text x="130" y="305" font-size="13">Santa Cruz</text>
+            </g>
+            <g class="area area--realengo" data-area="Bangu" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Bangu">
+              <polygon points="120,120 210,100 250,150 230,215 140,200"/>
+              <text x="188" y="165" font-size="14">Bangu</text>
+            </g>
+            <g class="area area--realengo" data-area="Senador Camará" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Senador Camará">
+              <polygon points="140,200 230,215 215,270 130,255"/>
+              <text x="178" y="238" font-size="9">Sen. Camará</text>
+            </g>
+            <g class="area area--realengo" data-area="Padre Miguel" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Padre Miguel">
+              <polygon points="210,100 290,90 310,140 250,150"/>
+              <text x="265" y="122" font-size="11">Padre Miguel</text>
+            </g>
+            <g class="area area--realengo" data-area="Realengo" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Realengo">
+              <polygon points="250,150 310,140 370,185 340,250 230,215"/>
+              <text x="302" y="198" font-size="15">Realengo</text>
+            </g>
+            <g class="area area--realengo" data-area="Jardim Sulacap" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Jardim Sulacap">
+              <polygon points="215,270 230,215 340,250 330,310 250,320"/>
+              <text x="284" y="280" font-size="11">Jardim Sulacap</text>
+            </g>
+            <g class="area area--realengo" data-area="Vila Militar" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Vila Militar">
+              <polygon points="290,90 370,70 380,120 310,140"/>
+              <text x="342" y="105" font-size="11">Vila Militar</text>
+            </g>
+            <g class="area area--realengo" data-area="Magalhães Bastos" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Magalhães Bastos">
+              <polygon points="310,140 380,120 420,170 370,185"/>
+              <text x="385" y="158" font-size="9">Mag. Bastos</text>
+            </g>
+            <g class="area area--realengo" data-area="Deodoro" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Deodoro">
+              <polygon points="370,70 450,60 470,120 380,120"/>
+              <text x="418" y="98" font-size="12">Deodoro</text>
+            </g>
+            <g class="area area--realengo" data-area="Campo dos Afonsos" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Campo dos Afonsos">
+              <polygon points="380,120 470,120 490,175 420,170"/>
+              <text x="438" y="148" font-size="9">Afonsos</text>
+            </g>
+            <g class="area area--realengo" data-area="Sulacap" data-region="realengo" role="button" tabindex="0" aria-pressed="false" aria-label="Sulacap">
+              <polygon points="370,185 420,170 450,225 400,270 340,250"/>
+              <text x="400" y="222" font-size="12">Sulacap</text>
+            </g>
+            <g class="area area--oeste" data-area="Jacarepaguá" data-region="oeste" role="button" tabindex="0" aria-pressed="false" aria-label="Jacarepaguá">
+              <polygon points="340,250 400,270 450,225 520,260 500,330 380,330 330,310"/>
+              <text x="425" y="292" font-size="13">Jacarepaguá</text>
+            </g>
+            <g class="area area--rj" data-area="Zona Norte e Centro" data-region="rj" role="button" tabindex="0" aria-pressed="false" aria-label="Zona Norte e Centro">
+              <polygon points="450,60 560,40 585,190 520,260 450,225 490,175 470,120"/>
+              <text x="528" y="140" font-size="11">Norte e Centro</text>
+            </g>
+            <g class="area area--rj" data-area="Barra e Zona Sul" data-region="rj" role="button" tabindex="0" aria-pressed="false" aria-label="Barra e Zona Sul">
+              <polygon points="520,260 585,190 592,335 500,340"/>
+              <text x="550" y="285" font-size="11">Barra / Sul</text>
+            </g>
+              </g>
+              <g class="areamap__pin" aria-hidden="true" transform="translate(302 176)">
+                <path d="M0 0c-9-12-14-18-14-26a14 14 0 0 1 28 0c0 8-5 14-14 26z" fill="#d22e29" stroke="#fbf6ea" stroke-width="2"/>
+                <circle cy="-26" r="5" fill="#fbf6ea"/>
+              </g>
+              <text x="22" y="360" class="areamap__sea-label" aria-hidden="true">Oceano Atlântico</text>
+            </svg>
+            <p class="areamap__status" role="status" aria-live="polite" data-map-status>Toque ou passe o mouse em uma área para ver o frete.</p>
+          </div>
+          <div class="areamap__side">
+            <h3 class="areamap__title">Faixas de frete</h3>
+            <ul class="areamap__zones" data-map-zones></ul>
+            <p class="areamap__note">Mapa ilustrativo, fora de escala. Valores por pessoa, somados ao preço-base.</p>
+          </div>
+        </div>
         <ul class="areas__list">
           <li class="areas__chip areas__chip--home">Realengo</li>
           <li class="areas__chip">Bangu</li>

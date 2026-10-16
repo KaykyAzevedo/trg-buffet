@@ -1027,6 +1027,92 @@
         '. Estimativa sujeita a confirmação; frete e região podem alterar o valor.';
     }
 
+
+    /* ---- mapa de bairros: áreas clicáveis ligadas às faixas de frete ---- */
+    var mapRoot = $('.areamap');
+    if (mapRoot) {
+      var mapStatus = $('[data-map-status]', mapRoot);
+      var zonesBox = $('[data-map-zones]', mapRoot);
+      var areas = $all('.area', mapRoot);
+
+      function feeText(r) {
+        if (!r.addMax) return 'sem acréscimo de frete';
+        return '+' + (r.addMin === r.addMax ? brl(r.addMin) : brl(r.addMin) + ' a ' + brl(r.addMax)) + '/pessoa de frete';
+      }
+      function regionOf(id) {
+        return Q.regions.filter(function (r) { return r.id === id; })[0];
+      }
+
+      // cartões das faixas (também são a alternativa em lista ao mapa)
+      Q.regions.forEach(function (r) {
+        var names = areas.filter(function (a) { return a.getAttribute('data-region') === r.id; })
+          .map(function (a) { return a.getAttribute('data-area'); });
+        var li = document.createElement('li');
+        li.className = 'zone zone--' + r.id;
+        li.innerHTML = '<span class="zone__swatch" aria-hidden="true"></span><div class="zone__body"><strong class="zone__name"></strong>' +
+          '<span class="zone__fee"></span><span class="zone__areas"></span></div>' +
+          '<button class="zone__btn" type="button"></button>';
+        li.querySelector('.zone__name').textContent = r.short || r.label;
+        li.querySelector('.zone__fee').textContent = feeText(r);
+        li.querySelector('.zone__areas').textContent = names.join(', ');
+        var btn = li.querySelector('.zone__btn');
+        btn.textContent = 'Usar esta faixa';
+        btn.setAttribute('aria-label', 'Usar a faixa ' + (r.short || r.label) + ' no orçamento');
+        btn.addEventListener('click', function () { chooseRegion(r.id, null); });
+        zonesBox.appendChild(li);
+      });
+
+      areas.forEach(function (a) {
+        var r = regionOf(a.getAttribute('data-region'));
+        var name = a.getAttribute('data-area');
+        a.setAttribute('aria-label', name + ': ' + (r.short || r.label) + ', ' + feeText(r) + '. Selecionar esta região no orçamento');
+        var t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        t.textContent = name + ' · ' + feeText(r);
+        a.insertBefore(t, a.firstChild);
+        function say() {
+          mapStatus.textContent = name + ': ' + (r.short || r.label) + ' (' + feeText(r) + ').';
+        }
+        a.addEventListener('mouseenter', say);
+        a.addEventListener('focus', say);
+        a.addEventListener('click', function () { chooseRegion(r.id, name); });
+        a.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chooseRegion(r.id, name); }
+        });
+      });
+
+      function markSelected() {
+        areas.forEach(function (a) {
+          var on = !!fRegiao.value && a.getAttribute('data-region') === fRegiao.value;
+          a.classList.toggle('is-selected', on);
+          a.setAttribute('aria-pressed', String(on));
+        });
+        $all('.zone', zonesBox).forEach(function (z) {
+          z.classList.toggle('is-selected', fRegiao.value !== '' && z.classList.contains('zone--' + fRegiao.value));
+        });
+      }
+
+      function chooseRegion(id, bairro) {
+        var r = regionOf(id);
+        fRegiao.value = id;
+        setError(fRegiao, '');
+        if (bairro && !fBairro.value.trim()) fBairro.value = bairro;
+        update();
+        markSelected();
+        mapStatus.textContent = '';
+        var msg = document.createElement('span');
+        msg.textContent = (bairro ? bairro + ' — ' : '') + 'região "' + (r.short || r.label) + '" escolhida no orçamento (' + feeText(r) + '). ';
+        var go = document.createElement('a');
+        go.href = '#orcamento';
+        go.textContent = 'Ver estimativa';
+        mapStatus.appendChild(msg);
+        mapStatus.appendChild(go);
+        track('mapa_regiao', { regiao: id });
+      }
+
+      fRegiao.addEventListener('change', markSelected);
+      markSelected();
+    }
+
     form.addEventListener('input', function () {
       if (!presetApplying) $all('[data-pack]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
     });

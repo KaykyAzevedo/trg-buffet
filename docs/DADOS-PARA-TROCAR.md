@@ -112,3 +112,12 @@ Em **`js/main.js` → `SITE.analytics`**. Por padrão `provider: ''`: nenhum scr
 `respectDoNotTrack: true` impede o carregamento quando o navegador envia Do Not Track / Global Privacy Control.
 
 Eventos enviados (sem dados pessoais): `whatsapp_click` e `orcamento_click` / `cardapio_click` (com `local`: hero, menu, barra-inferior, flutuante, rodape, pagina), `package_select` (`package`), `data_consultada` (`resultado`: livre/ocupada, nunca a data), `orcamento_submit` (`pessoas` em faixa, `regiao`, `sobremesa`, `adicionais`). O bairro, a data e a mensagem nunca são enviados. O service worker não intercepta o domínio do provider.
+
+## Mapa de bairros
+
+SVG estilizado (sem bibliotecas, fora de escala) na seção `#bairros` do `index.html`. Cada área é um `<g class="area" data-area="Nome" data-region="id">`:
+
+- `data-region` deve ser um `id` existente em `SITE.quote.regions` (`realengo`, `oeste`, `rj`). É isso que liga a área à faixa de frete: o valor mostrado no mapa, na lista de faixas e na calculadora vem de `SITE.quote.regions`.
+- Para mudar uma área de faixa, troque o `data-region` e a classe `area--...` (cor).
+- Clicar (ou Enter/Espaço) numa área escolhe a região no formulário e preenche o bairro se estiver vazio. A lista "Faixas de frete" ao lado é a alternativa acessível/mobile.
+- Os nomes dentro do mapa são escondidos abaixo de 640px (não cabem); o texto de apoio mostra o nome e o frete.
