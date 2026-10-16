@@ -241,22 +241,30 @@
     }
 
     tabs.forEach(function (tab, i) {
-      tab.addEventListener('click', function () { select(i, false); });
+      tab.addEventListener('click', function () { list.classList.add('is-animated'); select(i, false); });
       tab.addEventListener('keydown', function (e) {
         var n = tabs.length, next = null;
         if (e.key === 'ArrowRight') next = (i + 1) % n;
         else if (e.key === 'ArrowLeft') next = (i - 1 + n) % n;
         else if (e.key === 'Home') next = 0;
         else if (e.key === 'End') next = n - 1;
-        if (next !== null) { e.preventDefault(); select(next, true); }
+        if (next !== null) { e.preventDefault(); list.classList.add('is-animated'); select(next, true); }
       });
     });
 
     var initial = tabs.findIndex(function (t) { return t.getAttribute('aria-selected') === 'true'; });
     select(initial < 0 ? 0 : initial, false);
     window.addEventListener('resize', moveIndicator);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveIndicator);
     window.addEventListener('load', moveIndicator);
+    if (document.fonts) {
+      if (document.fonts.ready) document.fonts.ready.then(moveIndicator);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', moveIndicator);
+    }
+    // a largura das abas muda quando a fonte troca: reposiciona o indicador
+    if ('ResizeObserver' in window) {
+      var ro = new ResizeObserver(moveIndicator);
+      tabs.forEach(function (t) { ro.observe(t); });
+    }
   });
 
   /* ---------- Reveal on scroll ---------- */

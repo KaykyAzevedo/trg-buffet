@@ -1,6 +1,6 @@
 /* TRG Buffet - service worker simples: cache estático + fallback offline.
    Para forçar atualização dos arquivos em cache, mude VERSION. */
-const VERSION = 'trg-buffet-v1';
+const VERSION = 'trg-buffet-v2';
 const CORE = [
   './',
   'index.html',
@@ -11,6 +11,10 @@ const CORE = [
   'assets/img/logo-trg-buffet.svg',
   'assets/img/favicon.svg',
   'assets/icons/icon-192.png',
+  'assets/fonts/oswald-latin.woff2',
+  'assets/fonts/inter-latin.woff2',
+  'assets/fonts/fraunces-latin.woff2',
+  'assets/fonts/fraunces-italic-latin.woff2',
   'assets/fotos/hero-bg-800.webp',
   'assets/fotos/hero-card-800.webp'
 ];
