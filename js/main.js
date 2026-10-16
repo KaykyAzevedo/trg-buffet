@@ -90,14 +90,74 @@
         sides: ['arroz', 'farofa', 'molho', 'salpicao', 'caprese'], soup: '', drinks: true, dishes: true, dessert: true,
         meats: ['picanha', 'cupim'], extras: { garcom: 2, churrasqueiro: 1 }
       }
-    ]
+    ],
+
+    /* ---- Analytics (opcional). Com provider vazio NADA é carregado nem enviado. ---- */
+    analytics: {
+      provider: '',                          // '' (desligado) | 'plausible' | 'ga4'
+      plausibleDomain: '',                   // ex.: 'trgbuffet.com.br' (obrigatório p/ plausible)
+      plausibleScript: 'https://plausible.io/js/script.js',   // ou a URL do seu servidor Plausible
+      ga4Id: '',                             // ex.: 'G-XXXXXXXXXX' (obrigatório p/ ga4)
+      respectDoNotTrack: true                // não carrega se o navegador enviar Do Not Track
+    }
   };
   var WHATSAPP_NUMBER = SITE.whatsapp;
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // gancho de eventos (analytics): no-op até haver provider configurado
-  function track() {}
+  /* ---------- Analytics opcional (SITE.analytics) ---------- */
+  var analytics = (function () {
+    var A = SITE.analytics || {};
+    var dnt = A.respectDoNotTrack && (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true);
+    var ready = false;
+    function load(src, attrs) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      Object.keys(attrs || {}).forEach(function (k) { s.setAttribute(k, attrs[k]); });
+      document.head.appendChild(s);
+    }
+    if (!dnt && A.provider === 'plausible' && A.plausibleDomain) {
+      window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments); };
+      load(A.plausibleScript, { defer: '', 'data-domain': A.plausibleDomain });
+      ready = true;
+    } else if (!dnt && A.provider === 'ga4' && /^G-[A-Z0-9]+$/i.test(A.ga4Id || '')) {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', A.ga4Id);
+      load('https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(A.ga4Id));
+      ready = true;
+    }
+    return { enabled: ready, provider: A.provider };
+  })();
+
+  // nunca enviar dados pessoais (bairro, data exata, mensagem): só categorias
+  function track(name, props) {
+    if (!analytics.enabled) return;
+    try {
+      if (analytics.provider === 'plausible') window.plausible(name, props ? { props: props } : undefined);
+      else if (analytics.provider === 'ga4') window.gtag('event', name, props || {});
+    } catch (e) { /* analytics nunca deve quebrar o site */ }
+  }
+
+  function placeOf(el) {
+    if (el.closest('.dock')) return 'barra-inferior';
+    if (el.closest('.whatsapp-float')) return 'flutuante';
+    if (el.closest('.hero')) return 'hero';
+    if (el.closest('.footer')) return 'rodape';
+    if (el.closest('.header')) return 'menu';
+    return 'pagina';
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (a.hasAttribute('data-whatsapp')) track('whatsapp_click', { local: placeOf(a) });
+    else if (href === '#orcamento') track('orcamento_click', { local: placeOf(a) });
+    else if (href === '#cardapio') track('cardapio_click', { local: placeOf(a) });
+  });
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $all(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
@@ -702,6 +762,7 @@
       renderCalendar(moveFocus);
       showStatus(s, d);
       renderPreview();
+      track('data_consultada', { resultado: s === 'free' ? 'livre' : 'ocupada' });
     }
 
     function renderCalendar(takeFocus) {
@@ -845,6 +906,13 @@
       var bad = validate();
       if (bad) { bad.focus(); return; }
       var url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(buildMessage());
+      var stNow = getState();
+      track('orcamento_submit', {
+        pessoas: stNow.guests < 50 ? 'ate-49' : stNow.guests < 100 ? '50-99' : stNow.guests < 200 ? '100-199' : '200+',
+        regiao: stNow.region ? stNow.region.id : '',
+        sobremesa: stNow.dessert ? 'sim' : 'nao',
+        adicionais: String(stNow.extras.length)
+      });
       submit.disabled = true;
       submit.textContent = 'Abrindo WhatsApp…';
       window.open(url, '_blank', 'noopener');

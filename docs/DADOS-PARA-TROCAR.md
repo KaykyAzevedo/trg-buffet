@@ -99,3 +99,16 @@ Em **`js/main.js` → `SITE.packages`** (3 pacotes inventados: Essencial, Comple
 ## Fontes (self-hosted)
 
 Oswald, Fraunces (normal e itálico) e Inter ficam em `assets/fonts/*.woff2` (variáveis, subset latin, ~180 KB no total), declaradas no início de `css/style.css`. Oswald, Inter e Fraunces normal têm `preload` no `<head>`. Não há mais chamadas ao Google Fonts. Para trocar de fonte: substitua o arquivo, ajuste o `@font-face` e as variáveis `--font-display`, `--font-serif` e `--font-body`; atualize também a lista `CORE` do `sw.js` e aumente `VERSION`. Caracteres fora do subset latin (ex.: ✦) caem na fonte do sistema.
+
+## Analytics (opcional)
+
+Em **`js/main.js` → `SITE.analytics`**. Por padrão `provider: ''`: nenhum script é carregado e nenhum evento é enviado.
+
+| Provider | O que preencher |
+|---|---|
+| `'plausible'` | `plausibleDomain` (ex.: `trgbuffet.com.br`); `plausibleScript` só se usar servidor próprio. Sem cookies. |
+| `'ga4'` | `ga4Id` (ex.: `G-XXXXXXXXXX`). Usa cookies: considere aviso de consentimento (LGPD) antes de ligar. |
+
+`respectDoNotTrack: true` impede o carregamento quando o navegador envia Do Not Track / Global Privacy Control.
+
+Eventos enviados (sem dados pessoais): `whatsapp_click` e `orcamento_click` / `cardapio_click` (com `local`: hero, menu, barra-inferior, flutuante, rodape, pagina), `package_select` (`package`), `data_consultada` (`resultado`: livre/ocupada, nunca a data), `orcamento_submit` (`pessoas` em faixa, `regiao`, `sobremesa`, `adicionais`). O bairro, a data e a mensagem nunca são enviados. O service worker não intercepta o domínio do provider.
