@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel do TRG Buffet</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#1E2A2A">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/oswald-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="admin.css">
+  <script src="../js/site.js" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="top">
+    <div class="top__in">
+      <img class="top__logo" src="../assets/img/logo-trg-buffet.svg" alt="" width="44" height="44">
+      <div>
+        <h1 class="top__title">Painel do TRG Buffet</h1>
+        <p class="top__sub">Edite preços, cardápio, agenda, avaliações e contato.</p>
+      </div>
+      <a class="top__site" href="../" target="_blank" rel="noopener">Ver o site</a>
+    </div>
+  </header>
+
+  <main id="conteudo" class="wrap">
+    <div class="notice" role="note">
+    <strong>Atenção: este painel não tem senha nem login.</strong>
+    Qualquer pessoa que abrir esta página vê os formulários. A proteção é o <strong>token do GitHub</strong>:
+    sem ele ninguém consegue publicar nada. Guarde o token só com você e <strong>nunca o envie por e-mail ou mensagem</strong>.
+    O token fica apenas nesta aba do navegador (some quando você fecha a aba).
+  </div>
+
+    <div class="bar" role="region" aria-label="Estado das alterações">
+      <p class="bar__status" id="status" role="status" aria-live="polite">Carregando os dados…</p>
+      <div class="bar__actions">
+        <button class="btn btn--ghost" type="button" id="btn-preview">Pré-visualizar</button>
+        <button class="btn btn--ghost" type="button" id="btn-download">Baixar JSON</button>
+        <button class="btn btn--primary" type="button" id="btn-goto-publish">Publicar…</button>
+      </div>
+    </div>
+
+    <div id="errors" class="errors" role="alert" hidden></div>
+
+    <div class="layout">
+      <div class="tabs" role="tablist" aria-label="Seções do painel" id="tablist">
+        <button class="tab" role="tab" id="tab-precos" aria-controls="sec-precos" aria-selected="true" type="button">Preços e regiões</button>
+        <button class="tab" role="tab" id="tab-cardapio" aria-controls="sec-cardapio" aria-selected="false" tabindex="-1" type="button">Cardápio</button>
+        <button class="tab" role="tab" id="tab-agenda" aria-controls="sec-agenda" aria-selected="false" tabindex="-1" type="button">Agenda</button>
+        <button class="tab" role="tab" id="tab-avaliacoes" aria-controls="sec-avaliacoes" aria-selected="false" tabindex="-1" type="button">Avaliações</button>
+        <button class="tab" role="tab" id="tab-contato" aria-controls="sec-contato" aria-selected="false" tabindex="-1" type="button">Contato</button>
+        <button class="tab" role="tab" id="tab-publicar" aria-controls="sec-publicar" aria-selected="false" tabindex="-1" type="button">Publicar</button>
+      </div>
+
+      <div class="panels">
+        <section class="panel" role="tabpanel" id="sec-precos" aria-labelledby="tab-precos" tabindex="0"></section>
+        <section class="panel" role="tabpanel" id="sec-cardapio" aria-labelledby="tab-cardapio" tabindex="0" hidden></section>
+        <section class="panel" role="tabpanel" id="sec-agenda" aria-labelledby="tab-agenda" tabindex="0" hidden></section>
+        <section class="panel" role="tabpanel" id="sec-avaliacoes" aria-labelledby="tab-avaliacoes" tabindex="0" hidden></section>
+        <section class="panel" role="tabpanel" id="sec-contato" aria-labelledby="tab-contato" tabindex="0" hidden></section>
+        <section class="panel" role="tabpanel" id="sec-publicar" aria-labelledby="tab-publicar" tabindex="0" hidden></section>
+      </div>
+    </div>
+  </main>
+
+  <dialog class="preview" id="preview" aria-labelledby="preview-title">
+    <div class="preview__head">
+      <h2 id="preview-title">Pré-visualização dos dados</h2>
+      <button class="btn btn--ghost" type="button" id="preview-close">Fechar</button>
+    </div>
+    <div class="preview__body" id="preview-body"></div>
+  </dialog>
+
+  <noscript><p class="notice">Este painel precisa de JavaScript.</p></noscript>
+</body>
+</html>

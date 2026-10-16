@@ -180,3 +180,7 @@ Regras:
 7. Para parar de usar a planilha: apague o link em `agenda.csvUrl` (ou "Interromper publicação" no Google).
 
 Atenção: tudo o que está na planilha publicada é **público** (qualquer pessoa com o link vê). Não coloque nomes de clientes nem telefones nela; use só data e um motivo genérico (ex.: "reservado").
+
+## Painel de administração
+
+`/admin/` (noindex) edita `data/site-data.json` e publica pela API do GitHub com um token digitado pelo usuário (só em `sessionStorage`). **Não é autenticação**: a proteção é o token. Tudo está documentado em `docs/PAINEL-ADMIN.md` (inclui como criar o token com escopo mínimo só neste repositório).
