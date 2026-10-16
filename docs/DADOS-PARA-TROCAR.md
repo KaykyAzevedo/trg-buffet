@@ -184,3 +184,12 @@ Atenção: tudo o que está na planilha publicada é **público** (qualquer pess
 ## Painel de administração
 
 `/admin/` (noindex) edita `data/site-data.json` e publica pela API do GitHub com um token digitado pelo usuário (só em `sessionStorage`). **Não é autenticação**: a proteção é o token. Tudo está documentado em `docs/PAINEL-ADMIN.md` (inclui como criar o token com escopo mínimo só neste repositório).
+
+## Cardápio para imprimir / PDF
+
+`cardapio.html` (+ `css/cardapio.css`, `js/cardapio.js`) monta o cardápio **a partir do mesmo `data/site-data.json`** (categorias, itens, notas, condições, preços, frete, opcionais e contato), com o mesmo fallback embutido. Não há nada para editar na página: altere os dados no painel `/admin/` ou no JSON.
+
+- **Baixar PDF** chama `window.print()` (no diálogo, escolher "Salvar como PDF"). O `@media print` / `@page` deixa a folha em A4, sem a barra de ações, com logo, categorias, valores/frete, condições e contato.
+- **Compartilhar** usa a Web Share API (celulares); sem suporte, copia o link (com aviso na tela).
+- Links: botão na seção Cardápio, rodapé e 4º atalho ("PDF") da barra inferior mobile.
+- A página está com `noindex` (modo demo, igual ao `index.html`): remova a tag `robots` das duas quando publicar de verdade e ajuste o `canonical` para o domínio real.

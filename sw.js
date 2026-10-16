@@ -1,10 +1,13 @@
 /* TRG Buffet - service worker simples: cache estático + fallback offline.
    Para forçar atualização dos arquivos em cache, mude VERSION. */
-const VERSION = 'trg-buffet-v10';
+const VERSION = 'trg-buffet-v11';
 const CORE = [
   './',
   'index.html',
   'offline.html',
+  'cardapio.html',
+  'css/cardapio.css',
+  'js/cardapio.js',
   'css/style.css',
   'js/site.js',
   'js/main.js',

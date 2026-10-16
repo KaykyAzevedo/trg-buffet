@@ -3078,7 +3078,7 @@ select.form__input {
   inset: auto 0 0 0;
   z-index: 95;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   height: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: rgba(20, 28, 28, 0.94);
@@ -3625,4 +3625,8 @@ html[data-theme="light"] .packs {
 
 .cal__source:empty {
   display: none;
+}
+
+.menu__print {
+  margin-top: var(--sp-5);
 }

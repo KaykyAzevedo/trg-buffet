@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cardápio | TRG Buffet</title>
+  <meta name="description" content="Cardápio completo do TRG Buffet para imprimir ou salvar em PDF: churrasco, guarnições, petiscos, bebidas, sobremesas, condições e contato.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1E2A2A">
+  <link rel="canonical" href="https://www.trgbuffet.com.br/cardapio.html">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="data/site-data.json" as="fetch" crossorigin>
+  <link rel="preload" href="assets/fonts/oswald-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/cardapio.css">
+  <script src="js/site.js" defer></script>
+  <script src="js/cardapio.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#conteudo">Pular para o cardápio</a>
+
+  <header class="bar no-print">
+    <div class="bar__in">
+      <a class="bar__back" href="./#cardapio">← Voltar ao site</a>
+      <div class="bar__actions">
+        <button class="btn btn--ghost" type="button" id="btn-share">Compartilhar</button>
+        <button class="btn btn--primary" type="button" id="btn-print">Baixar PDF</button>
+      </div>
+    </div>
+    <p class="bar__hint" id="hint" role="status" aria-live="polite">Para salvar em PDF: clique em "Baixar PDF" e escolha "Salvar como PDF" no lugar da impressora.</p>
+  </header>
+
+  <main id="conteudo" class="sheet">
+    <header class="sheet__head">
+      <img class="sheet__logo" src="assets/img/logo-trg-buffet.svg" alt="TRG Buffet" width="96" height="96">
+      <div>
+        <p class="sheet__eyebrow">Desde 2009 · Realengo/RJ</p>
+        <h1 class="sheet__title">Cardápio do <span>Buffet Completo</span></h1>
+        <p class="sheet__sub" data-sub>Carregando o cardápio…</p>
+      </div>
+    </header>
+
+    <div data-categorias></div>
+
+    <section class="sheet__block" aria-labelledby="h-valores" data-valores hidden>
+      <h2 class="sheet__h" id="h-valores">Valores e frete</h2>
+      <div class="sheet__cols" data-valores-body></div>
+    </section>
+
+    <section class="sheet__block" aria-labelledby="h-cond" data-cond hidden>
+      <h2 class="sheet__h" id="h-cond">Condições</h2>
+      <ul class="sheet__list" data-cond-list></ul>
+    </section>
+
+    <footer class="sheet__foot">
+      <div data-contato></div>
+      <p class="sheet__fine" data-fine></p>
+    </footer>
+  </main>
+
+  <noscript><p class="noscript">Este cardápio precisa de JavaScript. Veja a versão completa em <a href="./#cardapio">trgbuffet</a>.</p></noscript>
+</body>
+</html>

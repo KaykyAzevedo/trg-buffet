@@ -1,0 +1,109 @@
+/* Cardápio para imprimir / PDF (cardapio.html). Tela: "folha" A4 sobre fundo creme. Impressão: A4 limpo. */
+@font-face { font-family: "Inter"; font-weight: 400 600; font-display: swap; src: url("../assets/fonts/inter-latin.woff2") format("woff2"); }
+@font-face { font-family: "Oswald"; font-weight: 500 700; font-display: swap; src: url("../assets/fonts/oswald-latin.woff2") format("woff2"); }
+@font-face { font-family: "Fraunces"; font-weight: 400 600; font-display: swap; src: url("../assets/fonts/fraunces-latin.woff2") format("woff2"); }
+
+:root {
+  --carvao-900: #141c1c;
+  --carvao-800: #1e2a2a;
+  --brasa-500: #d22e29;
+  --brasa-700: #9a2124;
+  --vinho: #86292b;
+  --ouro-400: #e0c27a;
+  --ouro-500: #c8a855;
+  --ouro-700: #7a5d14;
+  --creme-50: #fbf6ea;
+  --creme-100: #f3ead4;
+  --texto: #1e2a2a;
+  --suave: #46564f;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Oswald", "Arial Narrow", Impact, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font-body); font-size: 1rem; line-height: 1.55; color: var(--texto); background: var(--creme-100); }
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--brasa-700); outline-offset: 3px; border-radius: 6px; }
+
+.skip { position: fixed; top: 8px; left: 8px; z-index: 100; padding: 10px 16px; color: var(--creme-50); background: var(--carvao-800); border-radius: 999px; transform: translateY(-200%); }
+.skip:focus { transform: none; }
+
+/* Barra de ações (só na tela) */
+.bar { position: sticky; top: 0; z-index: 20; color: #f5efe0; background: var(--carvao-800); border-bottom: 3px solid var(--ouro-500); }
+.bar__in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; max-width: 920px; margin: 0 auto; padding: 10px 16px; }
+.bar__back { color: var(--ouro-400); font-weight: 600; text-decoration: none; padding: 10px 0; }
+.bar__back:hover { text-decoration: underline; }
+.bar__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.bar__hint { max-width: 920px; margin: 0 auto; padding: 0 16px 10px; font-size: 0.8125rem; color: #b9b3a3; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; font-family: var(--font-display); font-weight: 600; font-size: 0.9375rem; letter-spacing: 0.06em; text-transform: uppercase; border: 1.5px solid transparent; border-radius: 999px; transition: background-color 0.2s, color 0.2s, transform 0.2s; }
+.btn:active { transform: scale(0.98); }
+.btn--primary { color: var(--creme-50); background: linear-gradient(135deg, #d22e29, #9a2124); }
+.btn--primary:hover { filter: brightness(1.1); }
+.btn--ghost { color: var(--ouro-400); background: transparent; border-color: var(--ouro-500); }
+.btn--ghost:hover { color: var(--carvao-900); background: var(--ouro-500); }
+.bar :focus-visible { outline-color: var(--ouro-400); }
+
+/* Folha */
+.sheet { max-width: 794px; margin: 24px auto 48px; padding: 28px 24px 24px; background: var(--creme-50); border: 1px solid #d6c9a6; border-radius: 6px; box-shadow: 0 20px 50px -24px rgba(30, 42, 42, 0.45); }
+.sheet__head { display: flex; align-items: center; gap: 18px; padding-bottom: 18px; border-bottom: 3px double var(--ouro-700); }
+.sheet__logo { width: 96px; height: 96px; flex: none; border-radius: 50%; }
+.sheet__eyebrow { font-family: var(--font-display); font-weight: 500; font-size: 0.8125rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ouro-700); }
+.sheet__title { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.75rem, 6vw, 2.75rem); line-height: 1.05; letter-spacing: 0.02em; text-transform: uppercase; }
+.sheet__title span { color: var(--brasa-700); }
+.sheet__sub { margin-top: 6px; font-family: var(--font-serif); font-style: italic; color: var(--suave); }
+
+.cat { padding-top: 18px; }
+.cat + .cat { margin-top: 4px; }
+.cat__title { display: flex; align-items: baseline; gap: 12px; font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vinho); }
+.cat__title::after { content: ""; flex: 1; height: 2px; background: linear-gradient(90deg, var(--ouro-700), transparent); }
+.cat__note { margin-top: 2px; font-size: 0.875rem; font-style: italic; color: var(--suave); }
+.group__title { margin-top: 10px; font-family: var(--font-display); font-weight: 500; font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ouro-700); }
+.items { columns: 2 220px; column-gap: 28px; margin-top: 6px; }
+.items li { position: relative; padding: 3px 0 3px 18px; break-inside: avoid; }
+.items li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 8px; height: 8px; background: var(--ouro-500); border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
+
+.sheet__block { margin-top: 22px; padding-top: 16px; border-top: 1px solid #d6c9a6; break-inside: avoid; }
+.sheet__h { font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vinho); }
+.sheet__cols { display: grid; gap: 16px; margin-top: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.sheet__cols h3 { font-family: var(--font-display); font-weight: 500; font-size: 0.9375rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ouro-700); }
+.kv { display: grid; gap: 2px; margin-top: 4px; font-size: 0.9375rem; }
+.kv li { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; border-bottom: 1px dotted #c9bb94; }
+.kv li span:last-child { font-weight: 600; text-align: right; white-space: nowrap; }
+.sheet__list { display: grid; gap: 4px; margin-top: 8px; padding-left: 20px; list-style: disc; }
+
+.sheet__foot { margin-top: 24px; padding: 16px; color: #f5efe0; background: var(--carvao-800); border-radius: 8px; break-inside: avoid; }
+.contact { display: grid; gap: 4px; font-size: 0.9375rem; }
+.contact strong { font-family: var(--font-display); font-weight: 600; font-size: 1.125rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ouro-400); }
+.contact a { color: inherit; text-decoration: none; }
+.sheet__fine { margin-top: 10px; font-size: 0.75rem; color: #b9b3a3; }
+.noscript { max-width: 794px; margin: 24px auto; padding: 16px; background: #fff6df; }
+
+/* Impressão: A4 limpo */
+@page { size: A4; margin: 12mm 12mm 14mm; }
+
+@media print {
+  html, body { background: #fff !important; }
+  body { font-size: 10.5pt; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .no-print, .skip { display: none !important; }
+  .sheet { max-width: none; margin: 0; padding: 0; background: #fff; border: 0; border-radius: 0; box-shadow: none; }
+  .sheet__logo { width: 70px; height: 70px; }
+  .sheet__title { font-size: 26pt; }
+  .cat { break-inside: avoid; padding-top: 12px; }
+  .cat__title { font-size: 15pt; }
+  .items { columns: 2; column-gap: 20px; }
+  .sheet__block, .sheet__foot { break-inside: avoid; }
+  .sheet__foot { background: var(--carvao-800) !important; color: #f5efe0 !important; }
+  a { color: inherit; text-decoration: none; }
+}
+
+@media (max-width: 520px) {
+  .sheet { margin: 0; border-radius: 0; border-left: 0; border-right: 0; padding: 20px 16px; }
+  .sheet__head { flex-direction: column; align-items: flex-start; }
+  .items { columns: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; } }
